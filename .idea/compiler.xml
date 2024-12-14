@@ -8,11 +8,9 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="calculator" />
+        <module name="deal" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="deal" target="23" />
-    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
