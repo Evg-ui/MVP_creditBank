@@ -1,12 +1,10 @@
 package ru.berezentseva.deal.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import lombok.*;
 //import org.hibernate.annotations.TypeDef;
-import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.deal.DTO.Enums.ApplicationStatus;
 
 import java.sql.Timestamp;

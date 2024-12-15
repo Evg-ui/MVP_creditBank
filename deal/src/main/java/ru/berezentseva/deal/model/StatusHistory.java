@@ -5,11 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
 import ru.berezentseva.deal.DTO.Enums.ChangeType;
 
 import java.sql.Timestamp;
-import java.util.UUID;
 
 @Getter
 @Setter
