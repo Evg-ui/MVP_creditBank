@@ -25,10 +25,10 @@ public class Passport {
     @Column(name = "number", nullable = false, unique = false)
     private String number;
 
-    @Column(name = "issue_branch", nullable = false, unique = false)
+    @Column(name = "issue_branch", nullable = true, unique = false)
     private String issueBranch;
 
-    @Column(name = "issue_date", nullable = false, unique = false)
+    @Column(name = "issue_date", nullable = true, unique = false)
     private Date issueDate;
 
     }

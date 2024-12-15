@@ -42,7 +42,6 @@ public class Statement {
     @Column(name = "creation_date", nullable = false, unique = false)
     private Timestamp creationDate;
 
-
     // @Type(type = "jsonb")
     @Column(name = "applied_offer",  nullable = true, columnDefinition ="jsonb")
     private String appliedOffer;
@@ -71,14 +70,14 @@ public class Statement {
 //    }
 //
 //    // Метод для установки JsonNode
-    public void setAppliedOfferFromJsonNode(JsonNode jsonNode) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            this.appliedOffer = mapper.writeValueAsString(jsonNode);
-        } catch (Exception e) {
-            throw new RuntimeException("Ошибка при преобразовании JsonNode в строку", e);
-        }
-}
+//    public void setAppliedOfferFromJsonNode(JsonNode jsonNode) {
+//        try {
+//            ObjectMapper mapper = new ObjectMapper();
+//            this.appliedOffer = mapper.writeValueAsString(jsonNode);
+//        } catch (Exception e) {
+//            throw new RuntimeException("Ошибка при преобразовании JsonNode в строку", e);
+//        }
+//}
 
   //    private static final ObjectMapper objectMapper = new ObjectMapper();
 
