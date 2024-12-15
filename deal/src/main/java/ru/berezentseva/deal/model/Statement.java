@@ -1,5 +1,6 @@
 package ru.berezentseva.deal.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
@@ -25,10 +26,8 @@ public class Statement {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue//(strategy = GenerationType.IDENTITY)
     private UUID statementId;
-
-
 
     @OneToOne
     @JoinColumn(name = "client_id", nullable = false)  // FK
@@ -45,10 +44,10 @@ public class Statement {
     @Column(name = "creation_date", nullable = false, unique = false)
     private Timestamp creationDate;
 
+
     // @Type(type = "jsonb")
-    @Column(name = "applied_offer", columnDefinition ="jsonb")
+    @Column(name = "applied_offer",  nullable = true, columnDefinition ="jsonb")
     private String appliedOffer;
-    //private LoanOfferDto applied_offer;
 
     @Column(name = "sign_date", nullable = true, unique = false)
     private Timestamp signDate;
@@ -57,22 +56,23 @@ public class Statement {
     private String sesCode;
 
    // @Type(type = "jsonb")
-    @OneToOne
-    @JoinColumn(name = "status_history", nullable = true, unique = false, columnDefinition ="jsonb")
-    private StatusHistory statusHistory;
+//    @OneToOne
+//    @JoinColumn(name = "status_history", nullable = true, unique = false)
+    @Column(name = "status_history", nullable = true, unique = false) // времеенно, потому что ничего непонятно тут
+    private String statusHistory;
 
-    // Метод для получения JsonNode
-    @Transient
-    public JsonNode getAppliedOfferAsJsonNode() {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.readTree(appliedOffer);
-        } catch (Exception e) {
-            throw new RuntimeException("Ошибка при преобразовании appliedOffer в JsonNode", e);
-        }
-    }
-
-    // Метод для установки JsonNode
+    //    // Метод для получения JsonNode
+//    @Transient
+//    public JsonNode getAppliedOfferAsJsonNode() {
+//        try {
+//            ObjectMapper mapper = new ObjectMapper();
+//            return mapper.readTree(appliedOffer);
+//        } catch (Exception e) {
+//            throw new RuntimeException("Ошибка при преобразовании appliedOffer в JsonNode", e);
+//        }
+//    }
+//
+//    // Метод для установки JsonNode
     public void setAppliedOfferFromJsonNode(JsonNode jsonNode) {
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -81,4 +81,32 @@ public class Statement {
             throw new RuntimeException("Ошибка при преобразовании JsonNode в строку", e);
         }
 }
+
+  //    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+//    public void setAppliedOffer(LoanOfferDto offer) {
+//        try {
+//            this.appliedOffer = objectMapper.writeValueAsString(offer);
+//        } catch (JsonProcessingException e) {
+//            e.printStackTrace(); // Обработка ошибок
+//        }
+//    }
+//
+//    public LoanOfferDto getAppliedOffer() {
+//        try {
+//            return objectMapper.readValue(this.appliedOffer, LoanOfferDto.class);
+//        } catch (JsonProcessingException e) {
+//            e.printStackTrace(); // Обработка ошибок
+//            return null;
+//        }
+//    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.appliedOffer == null || this.appliedOffer.isEmpty()) {
+            this.appliedOffer = "{}"; // Устанавливаем пустой JSON объект по умолчанию
+        }
+    }
+
+
 }

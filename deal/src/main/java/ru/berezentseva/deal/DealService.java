@@ -16,6 +16,7 @@ import ru.berezentseva.calculator.DTO.CreditDto;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.calculator.DTO.ScoringDataDto;
+import ru.berezentseva.deal.DTO.Enums.ApplicationStatus;
 import ru.berezentseva.deal.DTO.Enums.CreditStatus;
 import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
 import ru.berezentseva.deal.model.Client;
@@ -29,11 +30,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Transactional
 @Service
@@ -41,23 +40,20 @@ import java.util.stream.Collectors;
 //@Component
 public class DealService {
 
-    @Autowired
+
     private final RestTemplate restTemplate;
 
+    private final ClientRepository clientRepository;
+    private final StatementRepository statementRepository;
+    private final CreditRepository creditRepository;
+
     @Autowired // Ensure this is annotated appropriately
-    public DealService(RestTemplate restTemplate) { //Constructor
+    public DealService(RestTemplate restTemplate, ClientRepository clientRepository, StatementRepository statementRepository, CreditRepository creditRepository) { //Constructor
         this.restTemplate = restTemplate;
+        this.clientRepository = clientRepository;
+        this.statementRepository = statementRepository;
+        this.creditRepository = creditRepository;
     }
-
-    @Autowired
-    private ClientRepository clientRepository;
-
-    @Autowired
-    private StatementRepository statementRepository;
-    @Autowired
-    private CreditRepository creditRepository;
-
-
 
     @Transactional
     public List<LoanOfferDto> createApplication(LoanStatementRequestDto request){
@@ -85,12 +81,17 @@ public class DealService {
         Statement statement = new Statement();
         statement.setStatementId(UUID.randomUUID());
         statement.setClientUuid(client);
-        log.info("ClientId {}", client.getClientUuid().toString());
+        log.info("ClientId {}", statement.getClientUuid().toString());
         statement.setCreationDate(Timestamp.valueOf(LocalDateTime.now()));
         log.info("Creation_date {}", statement.getCreationDate().toString());
+       // statement.setAppliedOffer("{}");
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        statement.setAppliedOffer(objectMapper.createObjectNode().toString()); // Это важно!
         log.info("Сохраняем заявку");
-     //   statement = statementRepository.save(statement);
-        log.info("UUID заявки {}", client.getClientUuid().toString());
+        statement.prePersist();
+        log.info("Applied Offer: {}", statement.getAppliedOffer());
+      //  statement = statementRepository.save(statement);
+        log.info("UUID заявки {}", statement.getStatementId().toString());
         log.info("Заявка создана");
 
 //         Отправка запроса на /calculator/offers.
@@ -118,18 +119,7 @@ public class DealService {
         for (LoanOfferDto offer : offers) {
             offer.setStatementId(finalStatement.getStatementId());
         }
-   // offers = offers.stream(offers).sorted(Comparator.comparing(LoanOfferDto::getRate).reversed()).collect(Collectors.toList());
-        // ... further processing with offers...
-       // return List.stream(offers).collect(Collectors.toList());
-
-        // присваиваем id заявки
-//        Statement finalStatement = statement;
-//        offers.forEach(offer -> offer.set(finalStatement.getStatementId()));
-//        log.info("Ответ Калькулятора получен");
-
-        //так можно вообще сортировку?
-   //     offers = offers.stream().sorted(Comparator.comparing(LoanOfferDto::getRate).reversed()).collect(Collectors.toList());
-        return offers;
+    return offers;
 
     }
 
@@ -141,26 +131,31 @@ public class DealService {
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode appliedOfferNode;
-
-        if (statement.getAppliedOffer() == null || statement.getAppliedOffer().isEmpty()) {
-            appliedOfferNode = mapper.createObjectNode(); // Создаём пустой JSON-объект
-            log.info("appliedOffer - null, создаём новый JSON объект");
+        if (statement.getAppliedOffer() == null) {
+            appliedOfferNode = mapper.createObjectNode();
+            log.info("AppliedOffer - null, создаём новый JSON объект");
         } else {
             try {
-                appliedOfferNode = (ObjectNode) mapper.readTree(statement.getAppliedOffer()); // Теперь просто передаем строку
+                appliedOfferNode = (ObjectNode) mapper.readTree(statement.getAppliedOffer()); // Обратите внимание на toString() здесь
             } catch (Exception e) {
-                log.error("Ошибка разбора существующего appliedOffer JSON: {}", e.getMessage());
-                throw new RuntimeException("Ошибка разбора существующего appliedOffer JSON.", e);
+                log.error("Ошибка разбора существующего AppliedOffer JSON: {}", e.getMessage());
+                throw new RuntimeException("Ошибка разбора существующего AppliedOffer JSON.", e);
             }
         }
+        appliedOfferNode.set("selectedOffer", mapper.valueToTree(offerDto));
+       // statement.setAppliedOffer(mapper.writeValueAsString(appliedOfferNode)); // Напрямую присваиваем ObjectNode
+        String jsonOutput = mapper.writeValueAsString(appliedOfferNode); // Сериализация в строку JSON
+        log.info("Строка json: " + jsonOutput);
+        statement.setAppliedOffer(jsonOutput);
+        log.info("Поле AppliedOffer сущности: " + statement.getAppliedOffer());
+        statement.setStatus(ApplicationStatus.PREAPPROVAL);
+        log.info("Новый статус заявки: " + statement.getStatus());
+      //  statement.setAppliedOffer(String.valueOf(appliedOfferNode));
+       // mapper.readTree(appliedOfferNode);
+        log.info("Выбранное предложение: {}", statement.getAppliedOffer());
+        //   log.info("Парсим json " + jsonNode.get("requestedAmount").asText());   //в  junit тест можно такое засунуть
 
-        // Теперь безопасно обновляем/сливаем данные в appliedOfferNode
-        appliedOfferNode.put("selectedOffer", mapper.valueToTree(offerDto));
-       // statement.setAppliedOffer(appliedOfferNode.toString()); // Теперь присваиваем JsonNode
-
-        // Сохраняем JSON как строку
-        statement.setAppliedOffer(mapper.writeValueAsString(appliedOfferNode));
-        statementRepository.save(statement);
+        statement = statementRepository.save(statement);
         log.info("Выбранное предложение обновлено в базе данных.");
 
         // List<StatementStatusHistoryDto> тоже надо как-то обновить
@@ -174,7 +169,7 @@ public class DealService {
                 -> new NoSuchElementException("Клиент с указанным ID не найден: " + finalStatement.getClientUuid())).getClientUuid();
 
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonNode = mapper.readTree(statement.getAppliedOffer());
+       // JsonNode jsonNode = mapper.readTree(statement.getAppliedOffer());
 
         ScoringDataDto scoringDataDto = new ScoringDataDto();
         scoringDataDto.setFirstName(client.getFirstName());
@@ -186,8 +181,8 @@ public class DealService {
         // scoringDataDto.setEmployment(client.getEmployment());
         scoringDataDto.setAccountNumber(client.getAccountNumber());
         // scoringDataDto.setAmount(statement.getAppliedOffer());
-        scoringDataDto.setTerm(jsonNode.get("term").asInt());
-        scoringDataDto.setAmount(jsonNode.get("amount").decimalValue());
+//        scoringDataDto.setTerm(jsonNode.get("term").asInt());
+//        scoringDataDto.setAmount(jsonNode.get("amount").decimalValue());
 
         CreditDto creditDto = restTemplate.postForObject("/calculator/calc", scoringDataDto, CreditDto.class);
 

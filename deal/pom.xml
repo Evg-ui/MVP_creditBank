@@ -84,6 +84,12 @@
             <version>2.15.2</version> <!-- Или последняя стабильная версия -->
         </dependency>
 
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>8.0.2.Final</version>
+        </dependency>
+
 
         <!--                <dependency>-->
 <!--            <groupId>org.hibernate</groupId>-->

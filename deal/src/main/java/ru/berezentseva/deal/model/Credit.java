@@ -18,8 +18,12 @@ import java.util.UUID;
 @Table
 public class Credit {
 
+    public void setCreditUuid(UUID creditUuid) {
+        this.creditUuid = UUID.randomUUID();
+    }
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue//(strategy = GenerationType.IDENTITY)
     private UUID creditUuid;
 
     @Column(name = "amount", nullable = false, unique = false)

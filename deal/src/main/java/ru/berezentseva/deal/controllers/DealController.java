@@ -16,6 +16,7 @@ import ru.berezentseva.deal.repositories.ClientRepository;
 import ru.berezentseva.deal.repositories.StatementRepository;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -50,10 +51,10 @@ public class DealController {
         //     try {
         log.info("Creating client and statement");
      //   CalculatorService calculatorService = new CalculatorService();
-      //  List<LoanOfferDto> offers = calculatorService.getLoanOffers(request);
-        dealService.createApplication(request);
+        List<LoanOfferDto> offers = dealService.createApplication(request);
+        //result = dealService.createApplication(request);
         log.info("Client and statement are created");
-        return new ResponseEntity<>(dealService.createApplication(request), HttpStatus.OK);
+        return new ResponseEntity<>(offers, HttpStatus.OK);
 
 //        } catch (ScoreException | IllegalArgumentException e) {
 //            log.error("Ошибка получения заявки. ", e.getMessage());
@@ -64,7 +65,7 @@ public class DealController {
     }
 
     @PostMapping("/offer/select")
-    public void selectOffer(@RequestBody LoanOfferDto offerDto) throws JsonProcessingException {
+    public void selectOffer(@RequestBody LoanOfferDto offerDto) throws IOException {
         dealService.selectOffer(offerDto);
     }
 

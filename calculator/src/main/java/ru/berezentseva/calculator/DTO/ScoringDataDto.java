@@ -17,6 +17,7 @@ public class ScoringDataDto {
     private Integer term;
     private String firstName;
     private String lastName;
+    private String middleName;
     private Gender gender;
     private LocalDate birthdate;
     private String passportSeries;

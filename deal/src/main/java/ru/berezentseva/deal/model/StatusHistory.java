@@ -5,9 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.UuidGenerator;
 import ru.berezentseva.deal.DTO.Enums.ChangeType;
 
 import java.sql.Timestamp;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -20,8 +22,9 @@ public class StatusHistory {
     @Id
     private Long id;
 
-    @JoinColumn(name = "status", nullable = false, unique = false)
-    private String statusHistory;
+    @OneToOne
+    @JoinColumn(name = "status", nullable = true, unique = false)
+    private Statement statusHistory;
 
     @Column(name = "time", nullable = false, unique = false)
     private Timestamp time;
