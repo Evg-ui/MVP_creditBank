@@ -49,9 +49,7 @@ public class DealController {
         log.info("Received request into dealController: {}", request);
         //     try {
         log.info("Creating client and statement");
-     //   CalculatorService calculatorService = new CalculatorService();
         List<LoanOfferDto> offers = dealService.createApplication(request);
-        //result = dealService.createApplication(request);
         log.info("Client and statement are created");
         return new ResponseEntity<>(offers, HttpStatus.OK);
 
@@ -62,12 +60,24 @@ public class DealController {
 //                    .body(e.getMessage());
 //        }
     }
-
+    @Operation(
+            summary = "Выбор одного из предложений. Request - LoanOfferDto, response - void + сохранение данных в БД",
+            description = "На основании пришедших по LoanOfferDto "+
+                    "достаётся из БД заявка(Statement) по statementId из LoanOfferDto. "+
+                    "В заявке обновляется статус, история статусов(List<StatementStatusHistoryDto>), " +
+                    "принятое предложение LoanOfferDto устанавливается в поле appliedOffer. "+
+                    "Заявка сохраняется."
+    )
     @PostMapping("/offer/select")
     public void selectOffer(@RequestBody LoanOfferDto offerDto) throws IOException {
         dealService.selectOffer(offerDto);
     }
 
+    @Operation(
+            summary = "Завершение регистрации + полный подсчёт кредита. Request - FinishRegistrationRequestDto, param - String," +
+                    " response void.",
+            description = "НАПИСАТЬ И ВЕЗДЕ TRY CATCH ДОБАВИТЬ"
+    )
     @PostMapping("/calculate/{statementId}")
     public void calculate(@PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) throws IOException {
         dealService.finishRegistration(statementId, request);

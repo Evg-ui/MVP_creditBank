@@ -9,10 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 import ru.berezentseva.calculator.DTO.*;
 import ru.berezentseva.deal.DTO.Enums.ApplicationStatus;
 import ru.berezentseva.deal.DTO.Enums.CreditStatus;
@@ -21,23 +19,17 @@ import ru.berezentseva.deal.model.Client;
 import ru.berezentseva.deal.model.Credit;
 import ru.berezentseva.deal.model.Passport;
 import ru.berezentseva.deal.model.Statement;
-import ru.berezentseva.deal.repositories.ClientRepository;
-import ru.berezentseva.deal.repositories.CreditRepository;
-import ru.berezentseva.deal.repositories.PassportRepository;
-import ru.berezentseva.deal.repositories.StatementRepository;
+import ru.berezentseva.deal.repositories.*;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
 
 import java.io.IOException;
-import java.net.URI;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Transactional
 @Service
 @Slf4j
-//@Component
 public class DealService {
 
 
@@ -47,14 +39,16 @@ public class DealService {
     private final StatementRepository statementRepository;
     private final CreditRepository creditRepository;
     private final PassportRepository passportRepository;
+    private final EmploymentRepository employmentRepository;
 
-    @Autowired // Ensure this is annotated appropriately
-    public DealService(RestTemplate restTemplate, ClientRepository clientRepository, StatementRepository statementRepository, CreditRepository creditRepository, PassportRepository passportRepository) { //Constructor
+    @Autowired
+    public DealService(RestTemplate restTemplate, ClientRepository clientRepository, StatementRepository statementRepository, CreditRepository creditRepository, PassportRepository passportRepository, EmploymentRepository employmentRepository) { //Constructor
         this.restTemplate = restTemplate;
         this.clientRepository = clientRepository;
         this.statementRepository = statementRepository;
         this.creditRepository = creditRepository;
         this.passportRepository = passportRepository;
+        this.employmentRepository = employmentRepository;
     }
 
     @Transactional
@@ -70,7 +64,6 @@ public class DealService {
         log.info("Номер {}", passport.getNumber());
         log.info("Сохраняем паспорт клиента");
         passport = passportRepository.save(passport);
-
 
         log.info("Создание нового клиента");
         Client client = new Client();
@@ -175,31 +168,39 @@ public class DealService {
         log.info("Запрос по заявке: {}", offerDto.getStatementId().toString());
 
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode appliedOfferNode;
+        //JsonNode appliedOfferNode;
+        ObjectNode appliedOfferNode;
 
-//        if (statement.getAppliedOffer() == null) {
-//            appliedOfferNode = mapper.createObjectNode();
-//            log.info("AppliedOffer - null, создаём новый JSON объект");
-//        } else {
-//            try {
-//                appliedOfferNode = mapper.readTree(statement.getAppliedOffer());
-//            } catch (Exception e) {
-//                log.error("Ошибка разбора существующего AppliedOffer JSON: {}", e.getMessage());
-//                throw new RuntimeException("Ошибка разбора существующего AppliedOffer JSON.", e);
-//            }
-//        }
-//        ((ObjectNode) appliedOfferNode).set("selectedOffer", mapper.valueToTree(offerDto));
+        if (statement.getAppliedOffer() == null) {
+            appliedOfferNode = mapper.createObjectNode();
+            log.info("AppliedOffer - null, создаём новый JSON объект");
+        } else {
+            try {
+               // appliedOfferNode = mapper.readTree(statement.getAppliedOffer());
+                appliedOfferNode = (ObjectNode) mapper.readTree(statement.getAppliedOffer());
+            } catch (Exception e) {
+                log.error("Ошибка разбора существующего AppliedOffer JSON: {}", e.getMessage());
+                throw new RuntimeException("Ошибка разбора существующего AppliedOffer JSON.", e);
+            }
+        }
+       //((ObjectNode) appliedOfferNode).set("selectedOffer", mapper.valueToTree(offerDto));
+       // appliedOfferNode = mapper.readTree(statement.getAppliedOffer());
 
-        // Сериализация обновленного JSON-объекта в строку
-        String jsonOutput = mapper.writeValueAsString(mapper.readTree(statement.getAppliedOffer()));
-        statement.setAppliedOffer(jsonOutput); // Устанавливаем строку JSON в поле appliedOffer
-        log.info("Строка json: " + jsonOutput);
-       // statement.setAppliedOffer(jsonOutput);
-        log.info("Поле AppliedOffer сущности: " + statement.getAppliedOffer());
+//        // Сериализация обновленного JSON-объекта в строку
+//        String jsonOutput = mapper.writeValueAsString(appliedOfferNode);
+//        statement.setAppliedOffer(jsonOutput); // Устанавливаем строку JSON в поле appliedOffer
+        appliedOfferNode.set("selectedOffer", mapper.valueToTree(offerDto));
+        statement.setAppliedOffer(mapper.writeValueAsString(appliedOfferNode));
+        log.info("Устанавливаем значение json: {}", statement.getAppliedOffer());
+
+        statementRepository.save(statement);
+//        log.info("Строка json: " + jsonOutput);
+//        statement.setAppliedOffer(jsonOutput);
+        log.info("Поле AppliedOffer сущности: {}", statement.getAppliedOffer());
 
         statement.setStatus(ApplicationStatus.PREAPPROVAL);
-        log.info("Новый статус заявки: " + statement.getStatus());
-      //  statement.setAppliedOffer(String.valueOf(appliedOfferNode));
+        log.info("Новый статус заявки: {}", statement.getStatus());
+        statement.setAppliedOffer(String.valueOf(appliedOfferNode));
        // mapper.readTree(appliedOfferNode);
         log.info("Выбранное предложение: {}", statement.getAppliedOffer());
         //   log.info("Парсим json " + jsonNode.get("requestedAmount").asText());   //в  junit тест можно такое засунуть
@@ -211,50 +212,111 @@ public class DealService {
     }
 
     public void finishRegistration(UUID statementId, FinishRegistrationRequestDto request) throws IOException {
-        Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow();
+       Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
+                -> new NoSuchElementException("Заявка с указанным ID не найдена: " + statementId));
+
         Statement finalStatement = statement;
 
         Client client = statementRepository.findStatementByClientUuid(statement.getClientUuid()).orElseThrow(()
                 -> new NoSuchElementException("Клиент с указанным ID не найден: " + finalStatement.getClientUuid())).getClientUuid();
 
         ObjectMapper mapper = new ObjectMapper();
-
-        EmploymentDto employment = new EmploymentDto();
         JsonNode jsonNode = mapper.readTree(statement.getAppliedOffer());
+        JsonNode selectedOfferNode = jsonNode.path("selectedOffer");
+        log.info("jsonNode: {}", jsonNode);
+        EmploymentDto employment = new EmploymentDto();
         ScoringDataDto scoringDataDto = new ScoringDataDto();
 
+        // проверяем, что appliedOffer непустой
+        if (selectedOfferNode.isObject()) {
         // насыщаем скоринг
-        scoringDataDto.setAmount(jsonNode.get("amount").decimalValue());
-        scoringDataDto.setTerm(jsonNode.get("term").asInt());
+            log.info("Начало заполнения данных для скоринга...");
+            if (selectedOfferNode.has("requestedAmount")) {
+                scoringDataDto.setAmount(selectedOfferNode.get("requestedAmount").decimalValue());
+            } else {
+                throw new IllegalArgumentException("Поле 'requestedAmount' отсутствует в selectedOffer");
+            }
+        //scoringDataDto.setAmount(jsonNode.get("selectedOffer").get(0).get("amount").decimalValue());
+            log.info("Полученная из offer сумма кредита requestedAmount: {}", selectedOfferNode.get("requestedAmount").decimalValue().toString());
+
+            if (selectedOfferNode.has("term")) {
+                scoringDataDto.setTerm(selectedOfferNode.get("term").asInt());
+            } else {
+                throw new IllegalArgumentException("Поле 'term' отсутствует в selectedOffer");
+            }
+            //scoringDataDto.setTerm(jsonNode.get("selectedOffer").get(0).get("term").asInt());
+            log.info("Полученный из offer срок кредита term: {}", selectedOfferNode.get("term").asInt());
         scoringDataDto.setFirstName(client.getFirstName());
         scoringDataDto.setLastName(client.getLastName());
         scoringDataDto.setMiddleName(client.getMiddleName());
         scoringDataDto.setGender(request.getGender());
         scoringDataDto.setBirthdate(client.getBirthDate());
-        scoringDataDto.setPassportNumber(client.getPassport().getNumber());
+            log.info("Установленная дата рождения: {}", scoringDataDto.getBirthdate().toString());
         scoringDataDto.setPassportSeries(client.getPassport().getSeries());
-        scoringDataDto.setPassportIssueBranch(request.getPassportIssueBrach());
+        scoringDataDto.setPassportNumber(client.getPassport().getNumber());
         scoringDataDto.setPassportIssueDate(request.getPassportIssueDate());
+        scoringDataDto.setPassportIssueBranch(request.getPassportIssueBrach());
         scoringDataDto.setMaritalStatus(request.getMaritalStatus());
         scoringDataDto.setDependentAmount(request.getDependentAmount());
         scoringDataDto.setEmployment(employment);
+            log.info("Установленный  работодатель: {}", scoringDataDto.getEmployment().toString());
         scoringDataDto.setAccountNumber(request.getAccountNumber());
-        scoringDataDto.setIsSalaryClient(jsonNode.get("isSalaryClient").asBoolean());
-        scoringDataDto.setIsSalaryClient(jsonNode.get("isInsuranceEnabled").asBoolean());
+            if (selectedOfferNode.has("isSalaryClient")) {
+                scoringDataDto.setIsSalaryClient(selectedOfferNode.get("isSalaryClient").asBoolean());
+            } else {
+                throw new IllegalArgumentException("Поле 'isSalaryClient' отсутствует в selectedOffer");
+            }
+            log.info("Зарплатный клиент: {}", selectedOfferNode.get("isSalaryClient").asBoolean());
+        //scoringDataDto.setIsSalaryClient(jsonNode.get("selectedOffer").get(0).get("isSalaryClient").asBoolean());
+            if (selectedOfferNode.has("isInsuranceEnabled")) {
+                scoringDataDto.setIsInsuranceEnabled(selectedOfferNode.get("isInsuranceEnabled").asBoolean());
+            } else {
+                throw new IllegalArgumentException("Поле 'isInsuranceEnabled' отсутствует в selectedOffer");
+            }
+            log.info("Наличие страховки: {}", selectedOfferNode.get("isInsuranceEnabled").asBoolean());
+        //scoringDataDto.setIsSalaryClient(jsonNode.get("selectedOffer").get(0).get("isInsuranceEnabled").asBoolean());
+        }
+        log.info("Скоринг заполнен!");
 
         // насыщаем клиент
         client.setAccountNumber(request.getAccountNumber());
         client.setDependentAmount(request.getDependentAmount());
         client.setGender(request.getGender());
         client.setMaritalStatus(request.getMaritalStatus());
-     //   client.setEmployment(scoringDataDto.getEmployment().);  // почему не хочет из employmet
-        CreditDto creditDto = restTemplate.postForObject("/calculator/calc", scoringDataDto, CreditDto.class);
+      //  client.setEmployment(scoringDataDto.getEmployment().);  // почему не хочет из employment
+      //  CreditDto creditDto = restTemplate.postForObject("/calculator/calc", scoringDataDto, CreditDto.class);
+
+        log.info("Отправляем запрос в /calculator/calc");
+
+        ResponseEntity<CreditDto> responseEntity;
+        try {
+            responseEntity = restTemplate.exchange(
+                    "http://localhost:8080/calculator/calc",
+                    HttpMethod.POST,
+                    new HttpEntity<>(scoringDataDto, new HttpHeaders()),
+                    CreditDto.class);
+
+            if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+                // Обработка ошибок HTTP
+                String errorMessage = "Ошибка при вызове API: " + responseEntity.getStatusCode() +
+                        ", тело ответа: " + responseEntity.getBody();
+                log.error(errorMessage);
+                throw new RuntimeException(errorMessage);
+            }
+         //   return new ResponseEntity<>(request, HttpStatus.OK);
+            CreditDto creditDto = responseEntity.getBody();
+
+        } catch (RestClientException e) {
+            //Обработка общих ошибок Rest клиента
+            log.error("Ошибка при вызове API: ", e);
+            throw new RuntimeException("Ошибка при вызове API: " + e.getMessage(), e);
+        }
 
         Credit credit = new Credit();
         //  credit.setCreditDto(creditDto);
         credit.setCreditStatus(CreditStatus.CALCULATED);
         credit = creditRepository.save(credit);
-        //  statement.setStatus(statement.CALCULATED);
+        statement.setStatus(ApplicationStatus.APPROVED); // или какой надо
         statement = statementRepository.save(statement);
     }
 }
