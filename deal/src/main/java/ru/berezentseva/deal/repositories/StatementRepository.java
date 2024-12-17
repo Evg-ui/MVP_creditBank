@@ -12,5 +12,5 @@ import java.util.UUID;
 public interface StatementRepository extends JpaRepository <Statement, UUID>{
     Optional<Statement> findStatementByStatementId(UUID uuid);
     Optional<Statement> findStatementByClientUuid(Client clientUuid);
-    Optional<Statement> findStatementByClientUuidAndStatementId(Client clientUuid, UUID uuid);
+  //  Optional<Statement> findStatementByClientUuidAndStatementId(Client clientUuid, UUID uuid);
 }

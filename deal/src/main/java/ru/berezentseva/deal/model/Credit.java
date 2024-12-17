@@ -6,6 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import ru.berezentseva.calculator.DTO.PaymentScheduleElementDto;
 import ru.berezentseva.deal.DTO.Enums.CreditStatus;
 
 import java.math.BigDecimal;
@@ -17,6 +20,7 @@ import java.util.UUID;
 @Entity
 @Table
 public class Credit {
+
 
     public void setCreditUuid(UUID creditUuid) {
         this.creditUuid = UUID.randomUUID();
@@ -41,10 +45,9 @@ public class Credit {
     @Column(name = "psk", nullable = false, unique = false)
     private BigDecimal psk;
 
- //   @Type(type = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "payment_schedule", columnDefinition ="jsonb")
-   // private PaymentScheduleElementDto payment_schedule;
-    private String paymentSchedule;
+    private PaymentScheduleElementDto payment_schedule;
 
     @Column(name = "insurance_enabled", nullable = false, unique = false)
     private Boolean insuranceEnabled;

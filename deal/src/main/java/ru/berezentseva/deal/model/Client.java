@@ -1,6 +1,8 @@
 package ru.berezentseva.deal.model;
 
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import ru.berezentseva.calculator.DTO.Enums.Gender;
 
 import jakarta.persistence.*;
@@ -21,7 +23,7 @@ public class Client {
     }
 
     @Id
-    @GeneratedValue//(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID clientUuid;
 
     @Column(name = "last_name", nullable = false, unique = false)
@@ -41,7 +43,7 @@ public class Client {
 
   //  @OneToOne
     @Enumerated(EnumType.STRING)
-    @JoinColumn(name = "gender", nullable = true, unique = false)
+    @Column(name = "gender", nullable = true, unique = false)
     private Gender gender;
 
     //@OneToOne
@@ -52,12 +54,12 @@ public class Client {
     @Column(name = "dependent_amount", nullable = true, unique = false)
     private Integer dependentAmount;
 
-    @OneToOne
-    @JoinColumn(name = "passport_id", nullable = true) // Внешний ключ на таблицу паспортов
+    @Column(name = "passport", nullable = false, columnDefinition ="jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private Passport passport;
 
-    @OneToOne
-    @JoinColumn(name = "employment_id", nullable = true) // Внешний ключ на таблицу работы
+    @Column(name = "employment", nullable = true, columnDefinition ="jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private Employment employment;
 
     @Column(name = "account_number", nullable = true, unique = false)

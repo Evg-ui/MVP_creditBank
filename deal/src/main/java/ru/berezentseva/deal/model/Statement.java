@@ -1,13 +1,16 @@
 package ru.berezentseva.deal.model;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import lombok.*;
-//import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.processing.SQL;
+import org.hibernate.type.SqlTypes;
+import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.deal.DTO.Enums.ApplicationStatus;
+import ru.berezentseva.deal.DTO.StatementStatusHistoryDto;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.UUID;
 
 @ToString
@@ -16,7 +19,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table
-//@TypeDef(name = "json", typeClass = JsonType.class)
 public class Statement {
 
     public void setStatementId(UUID statementId) {
@@ -36,6 +38,7 @@ public class Statement {
     private Credit creditUuid;
 
    // @OneToOne
+    @Enumerated(EnumType.STRING)
     @JoinColumn(name = "status", nullable  = true, unique = false)
     private ApplicationStatus status;
 
@@ -43,8 +46,9 @@ public class Statement {
     private Timestamp creationDate;
 
     // @Type(type = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "applied_offer",  nullable = true, columnDefinition ="jsonb")
-    private String appliedOffer;
+    private LoanOfferDto appliedOffer;
 
     @Column(name = "sign_date", nullable = true, unique = false)
     private Timestamp signDate;
@@ -52,11 +56,9 @@ public class Statement {
     @Column(name = "ses_code", nullable = true, unique = false)
     private String sesCode;
 
-   // @Type(type = "jsonb")
-//    @OneToOne
-//    @JoinColumn(name = "status_history", nullable = true, unique = false)
-    @Column(name = "status_history", nullable = true, unique = false) // времеенно, потому что ничего непонятно тут
-    private String statusHistory;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "status_history", nullable = true, unique = false, columnDefinition ="jsonb") // времеенно, потому что ничего непонятно тут
+    private List<StatementStatusHistoryDto> statusHistory;
 
     //    // Метод для получения JsonNode
 //    @Transient
@@ -98,12 +100,12 @@ public class Statement {
 //        }
 //    }
 
-    @PrePersist
-    public void prePersist() {
-        if (this.appliedOffer == null || this.appliedOffer.isEmpty()) {
-            this.appliedOffer = "{}"; // Устанавливаем пустой JSON объект по умолчанию
-        }
-    }
+//    @PrePersist
+//    public void prePersist() {
+//        if (this.appliedOffer == null || this.appliedOffer.isEmpty()) {
+//            this.appliedOffer = "{}"; // Устанавливаем пустой JSON объект по умолчанию
+//        }
+ //   }
 
 
 }
