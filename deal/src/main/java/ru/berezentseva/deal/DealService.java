@@ -1,9 +1,6 @@
 package ru.berezentseva.deal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -153,12 +150,6 @@ public class DealService {
                 -> new NoSuchElementException("Заявка с указанным ID не найдена: " + offerDto.getStatementId()));
         log.info("Запрос по заявке: {}", offerDto.getStatementId().toString());
 
-
-//        // Сериализация обновленного JSON-объекта в строку
-//        String jsonOutput = mapper.writeValueAsString(appliedOfferNode);
-//        statement.setAppliedOffer(jsonOutput); // Устанавливаем строку JSON в поле appliedOffer
-//        appliedOfferNode.set("selectedOffer", mapper.valueToTree(offerDto));
-//        statement.setAppliedOffer(mapper.writeValueAsString(appliedOfferNode));
         log.info("Устанавливаем значение json: {}", statement.getAppliedOffer());
         log.info("Обновляем данные заявки");
         statement.setStatus(ApplicationStatus.PREAPPROVAL);
@@ -169,18 +160,6 @@ public class DealService {
         log.info("Выбранное предложение: {}", statement.getAppliedOffer());
         log.info("Данные заявки обновлены!");
         log.info("Выбранное предложение обновлено в базе данных.");
-//        log.info("Строка json: " + jsonOutput);
-
-//        statement.setAppliedOffer(jsonOutput);
-
-
-     //   statement.setAppliedOffer(String.valueOf(appliedOfferNode));
-        // mapper.readTree(appliedOfferNode);
-
-        //   log.info("Парсим json " + jsonNode.get("requestedAmount").asText());   //в  junit тест можно такое засунуть
-
-
-
         // List<StatementStatusHistoryDto> тоже надо как-то обновить
     }
 

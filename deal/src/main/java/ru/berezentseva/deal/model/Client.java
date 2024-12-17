@@ -18,9 +18,9 @@ import java.util.UUID;
 @Table
 public class Client {
 
-    public void setClientUuid(UUID clientUuid) {
-        this.clientUuid = UUID.randomUUID();
-    }
+//    public void setClientUuid(UUID clientUuid) {
+//        this.clientUuid = UUID.randomUUID();
+//    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

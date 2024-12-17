@@ -22,9 +22,9 @@ import java.util.UUID;
 public class Credit {
 
 
-    public void setCreditUuid(UUID creditUuid) {
-        this.creditUuid = UUID.randomUUID();
-    }
+//    public void setCreditUuid(UUID creditUuid) {
+//        this.creditUuid = UUID.randomUUID();
+//    }
 
     @Id
     @GeneratedValue//(strategy = GenerationType.IDENTITY)

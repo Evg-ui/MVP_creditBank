@@ -3,7 +3,6 @@ package ru.berezentseva.deal.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.processing.SQL;
 import org.hibernate.type.SqlTypes;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.deal.DTO.Enums.ApplicationStatus;
@@ -21,9 +20,9 @@ import java.util.UUID;
 @Table
 public class Statement {
 
-    public void setStatementId(UUID statementId) {
-        this.statementId = UUID.randomUUID();
-    }
+//    public void setStatementId(UUID statementId) {
+//        this.statementId = UUID.randomUUID();
+//    }
 
     @Id
     @GeneratedValue//(strategy = GenerationType.IDENTITY)
