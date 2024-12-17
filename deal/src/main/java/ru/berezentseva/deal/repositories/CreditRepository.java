@@ -10,5 +10,5 @@ import java.util.UUID;
 
 @Repository
 public interface CreditRepository extends JpaRepository<Credit, UUID> {
-    Optional<Credit> findStatementByCreditUuid(UUID uuid);
+    Optional<Credit> findCreditByCreditUuid(UUID uuid);
 }

@@ -62,6 +62,11 @@ public class DealService {
         passportRepository.save(passport);
     }
 
+    @Transactional
+    Credit saveCredit(Credit credit) {
+        return creditRepository.save(credit);
+    }
+
 
     public List<LoanOfferDto> createApplication(LoanStatementRequestDto request) {
         // try catch добавить
@@ -75,7 +80,7 @@ public class DealService {
         passport.setNumber(request.getPassportNumber());
         log.info("Номер {}", passport.getNumber());
         log.info("Сохраняем паспорт клиента");
-        savePassport(passport);
+      //  savePassport(passport);
         log.info("Паспорт клиента сохранен!");
 
         log.info("Создание нового клиента");
@@ -108,7 +113,6 @@ public class DealService {
         log.info("Creation_date {}", statement.getCreationDate().toString());
         log.info("Сохраняем заявку");
         saveStatement(statement);
-       // log.info("Applied Offer: {}", statement.getAppliedOffer());
         log.info("UUID заявки {}", statement.getStatementId().toString());
         log.info("Заявка создана");
 
@@ -167,85 +171,49 @@ public class DealService {
         Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
                 -> new NoSuchElementException("Заявка с указанным ID не найдена: " + statementId));
 
-        Statement finalStatement = statement;
+     //  Statement finalStatement = statement;
 
         Client client = statementRepository.findStatementByClientUuid(statement.getClientUuid()).orElseThrow(()
-                -> new NoSuchElementException("Клиент с указанным ID не найден: " + finalStatement.getClientUuid())).getClientUuid();
+                -> new NoSuchElementException("Клиент с указанным ID не найден: " + statement.getClientUuid())).getClientUuid();
 
-//        ObjectMapper mapper = new ObjectMapper();
-//        JsonNode jsonNode = mapper.readTree(statement.getAppliedOffer());
-//        JsonNode selectedOfferNode = jsonNode.path("selectedOffer");
-//        log.info("jsonNode: {}", jsonNode);
-        EmploymentDto employment = new EmploymentDto();
+        EmploymentDto employment = request.getEmployment();
+
         ScoringDataDto scoringDataDto = new ScoringDataDto();
-
-        // проверяем, что appliedOffer непустой
-//        if (selectedOfferNode.isObject()) {
-//            // насыщаем скоринг
-//            log.info("Начало заполнения данных для скоринга...");
-//            if (selectedOfferNode.has("requestedAmount")) {
-//                scoringDataDto.setAmount(selectedOfferNode.get("requestedAmount").decimalValue());
-//            } else {
-//                throw new IllegalArgumentException("Поле 'requestedAmount' отсутствует в selectedOffer");
-//            }
-//            //scoringDataDto.setAmount(jsonNode.get("selectedOffer").get(0).get("amount").decimalValue());
-//            log.info("Полученная из offer сумма кредита requestedAmount: {}", selectedOfferNode.get("requestedAmount").decimalValue().toString());
-//
-//            if (selectedOfferNode.has("term")) {
-//                scoringDataDto.setTerm(selectedOfferNode.get("term").asInt());
-//            } else {
-//                throw new IllegalArgumentException("Поле 'term' отсутствует в selectedOffer");
-//            }
-//            //scoringDataDto.setTerm(jsonNode.get("selectedOffer").get(0).get("term").asInt());
-//            log.info("Полученный из offer срок кредита term: {}", selectedOfferNode.get("term").asInt());
-            log.info("Подготавливаем Скоринг...");
-            scoringDataDto.setFirstName(client.getFirstName());
-            scoringDataDto.setLastName(client.getLastName());
-            scoringDataDto.setMiddleName(client.getMiddleName());
-            scoringDataDto.setGender(request.getGender());
-            scoringDataDto.setBirthdate(client.getBirthDate());
-            log.info("Установленная дата рождения: {}", scoringDataDto.getBirthdate().toString());
-            scoringDataDto.setPassportSeries(client.getPassport().getSeries());
-            scoringDataDto.setPassportNumber(client.getPassport().getNumber());
-            scoringDataDto.setPassportIssueDate(request.getPassportIssueDate());
-            scoringDataDto.setPassportIssueBranch(request.getPassportIssueBrach());
-            scoringDataDto.setMaritalStatus(request.getMaritalStatus());
-            scoringDataDto.setDependentAmount(request.getDependentAmount());
-            scoringDataDto.setEmployment(employment);
-            log.info("Установленный  работодатель: {}", scoringDataDto.getEmployment().toString());
-            scoringDataDto.setAccountNumber(request.getAccountNumber());
-            log.info("Данные для скоринга готовы!");
-//            if (selectedOfferNode.has("isSalaryClient")) {
-//                scoringDataDto.setIsSalaryClient(selectedOfferNode.get("isSalaryClient").asBoolean());
-//            } else {
-//                throw new IllegalArgumentException("Поле 'isSalaryClient' отсутствует в selectedOffer");
-//            }
-//            log.info("Зарплатный клиент: {}", selectedOfferNode.get("isSalaryClient").asBoolean());
-//            //scoringDataDto.setIsSalaryClient(jsonNode.get("selectedOffer").get(0).get("isSalaryClient").asBoolean());
-//            if (selectedOfferNode.has("isInsuranceEnabled")) {
-//                scoringDataDto.setIsInsuranceEnabled(selectedOfferNode.get("isInsuranceEnabled").asBoolean());
-//            } else {
-//                throw new IllegalArgumentException("Поле 'isInsuranceEnabled' отсутствует в selectedOffer");
-//            }
-//            log.info("Наличие страховки: {}", selectedOfferNode.get("isInsuranceEnabled").asBoolean());
-//            //scoringDataDto.setIsSalaryClient(jsonNode.get("selectedOffer").get(0).get("isInsuranceEnabled").asBoolean());
-//        }
-//        log.info("Скоринг заполнен!");
-//
+        log.info("Подготавливаем Скоринг...");
+        scoringDataDto.setAmount(statement.getAppliedOffer().getRequestedAmount());
+        scoringDataDto.setTerm(statement.getAppliedOffer().getTerm());
+        scoringDataDto.setFirstName(client.getFirstName());
+        scoringDataDto.setLastName(client.getLastName());
+        scoringDataDto.setMiddleName(client.getMiddleName());
+        scoringDataDto.setGender(request.getGender());
+        scoringDataDto.setBirthdate(client.getBirthDate());
+        log.info("Установленная дата рождения: {}", scoringDataDto.getBirthdate().toString());
+        scoringDataDto.setPassportSeries(client.getPassport().getSeries());
+        scoringDataDto.setPassportNumber(client.getPassport().getNumber());
+        scoringDataDto.setPassportIssueDate(request.getPassportIssueDate());
+        scoringDataDto.setPassportIssueBranch(request.getPassportIssueBrach());
+        scoringDataDto.setMaritalStatus(request.getMaritalStatus());
+        scoringDataDto.setDependentAmount(request.getDependentAmount());
+        scoringDataDto.setEmployment(employment);
+        log.info("Установленный  работодатель: {}", scoringDataDto.getEmployment().toString());
+        scoringDataDto.setAccountNumber(request.getAccountNumber());
+        scoringDataDto.setIsSalaryClient(statement.getAppliedOffer().getIsSalaryClient());
+        scoringDataDto.setIsInsuranceEnabled(statement.getAppliedOffer().getIsInsuranceEnabled());
+        log.info("Данные для скоринга готовы!");
         // насыщаем клиент
         log.info("Дополняем данные по клиенту...");
         client.setAccountNumber(request.getAccountNumber());
         client.setDependentAmount(request.getDependentAmount());
         client.setGender(request.getGender());
         client.setMaritalStatus(request.getMaritalStatus());
-        //  client.setEmployment(scoringDataDto.getEmployment());  // почему не хочет из employment
+        //client.setEmployment(employment);  // почему не хочет из employment
         //  CreditDto creditDto = restTemplate.postForObject("/calculator/calc", scoringDataDto, CreditDto.class);
+        saveClient(client);
         log.info("Данные по клиенту обновлены!");
 
-
         log.info("Отправляем запрос в /calculator/calc");
-
         ResponseEntity<CreditDto> responseEntity;
+        CreditDto creditDto;
         try {
             responseEntity = restTemplate.exchange(
                     "http://localhost:8080/calculator/calc",
@@ -260,20 +228,34 @@ public class DealService {
                 log.error(errorMessage);
                 throw new RuntimeException(errorMessage);
             }
-            //   return new ResponseEntity<>(request, HttpStatus.OK);
-            CreditDto creditDto = responseEntity.getBody();
+            creditDto = responseEntity.getBody();
 
+            if (creditDto == null) {
+                String errorMessage = "Ответ от API не содержит данных.";
+                log.error(errorMessage);
+                throw new RuntimeException(errorMessage);
+            }
         } catch (RestClientException e) {
             //Обработка общих ошибок Rest клиента
             log.error("Ошибка при вызове API: ", e);
             throw new RuntimeException("Ошибка при вызове API: " + e.getMessage(), e);
         }
 
+        log.info("Полученный кредит из calc: {}", creditDto);
         Credit credit = new Credit();
-        //  credit.setCreditDto(creditDto);
+        log.info("UUID кредита {}", credit.getCreditUuid());
+        credit.setAmount(creditDto.getAmount());
+        credit.setTerm(creditDto.getTerm());
+        credit.setMonthlyPayment(creditDto.getMonthlyPayment());
+        credit.setRate(creditDto.getRate());
+        credit.setPsk(creditDto.getPsk());
+        credit.setPayment_schedule(creditDto.getPaymentSchedule());
+        credit.setSalaryClient(creditDto.getIsSalaryClient());
+        credit.setInsuranceEnabled(creditDto.getIsInsuranceEnabled());
         credit.setCreditStatus(CreditStatus.CALCULATED);
-        credit = creditRepository.save(credit);
-        statement.setStatus(ApplicationStatus.APPROVED); // или какой надо
-        statement = statementRepository.save(statement);
+        saveCredit(credit);
+        statement.setStatus(ApplicationStatus.APPROVED);
+        statement.setCreditUuid(credit);
+        saveStatement(statement);
     }
 }

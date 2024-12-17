@@ -12,6 +12,7 @@ import ru.berezentseva.calculator.DTO.PaymentScheduleElementDto;
 import ru.berezentseva.deal.DTO.Enums.CreditStatus;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Getter @Setter
@@ -27,7 +28,7 @@ public class Credit {
 //    }
 
     @Id
-    @GeneratedValue//(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID creditUuid;
 
     @Column(name = "amount", nullable = false, unique = false)
@@ -47,7 +48,7 @@ public class Credit {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "payment_schedule", columnDefinition ="jsonb")
-    private PaymentScheduleElementDto payment_schedule;
+    private List<PaymentScheduleElementDto> payment_schedule;
 
     @Column(name = "insurance_enabled", nullable = false, unique = false)
     private Boolean insuranceEnabled;
@@ -56,6 +57,7 @@ public class Credit {
     private Boolean salaryClient;
 
     // @OneToOne
+    @Enumerated(EnumType.STRING)
     @JoinColumn(name = "credit_status", nullable = true, unique = false)
     private CreditStatus creditStatus;
 }

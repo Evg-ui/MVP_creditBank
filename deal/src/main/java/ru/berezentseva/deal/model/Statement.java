@@ -25,7 +25,7 @@ public class Statement {
 //    }
 
     @Id
-    @GeneratedValue//(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID statementId;
 
     @OneToOne
@@ -58,53 +58,5 @@ public class Statement {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "status_history", nullable = true, unique = false, columnDefinition ="jsonb") // времеенно, потому что ничего непонятно тут
     private List<StatementStatusHistoryDto> statusHistory;
-
-    //    // Метод для получения JsonNode
-//    @Transient
-//    public JsonNode getAppliedOfferAsJsonNode() {
-//        try {
-//            ObjectMapper mapper = new ObjectMapper();
-//            return mapper.readTree(appliedOffer);
-//        } catch (Exception e) {
-//            throw new RuntimeException("Ошибка при преобразовании appliedOffer в JsonNode", e);
-//        }
-//    }
-//
-//    // Метод для установки JsonNode
-//    public void setAppliedOfferFromJsonNode(JsonNode jsonNode) {
-//        try {
-//            ObjectMapper mapper = new ObjectMapper();
-//            this.appliedOffer = mapper.writeValueAsString(jsonNode);
-//        } catch (Exception e) {
-//            throw new RuntimeException("Ошибка при преобразовании JsonNode в строку", e);
-//        }
-//}
-
-  //    private static final ObjectMapper objectMapper = new ObjectMapper();
-
-//    public void setAppliedOffer(LoanOfferDto offer) {
-//        try {
-//            this.appliedOffer = objectMapper.writeValueAsString(offer);
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace(); // Обработка ошибок
-//        }
-//    }
-//
-//    public LoanOfferDto getAppliedOffer() {
-//        try {
-//            return objectMapper.readValue(this.appliedOffer, LoanOfferDto.class);
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace(); // Обработка ошибок
-//            return null;
-//        }
-//    }
-
-//    @PrePersist
-//    public void prePersist() {
-//        if (this.appliedOffer == null || this.appliedOffer.isEmpty()) {
-//            this.appliedOffer = "{}"; // Устанавливаем пустой JSON объект по умолчанию
-//        }
- //   }
-
 
 }
