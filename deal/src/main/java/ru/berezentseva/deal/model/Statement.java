@@ -56,7 +56,7 @@ public class Statement {
     private String sesCode;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "status_history", nullable = true, unique = false, columnDefinition ="jsonb") // времеенно, потому что ничего непонятно тут
+    @Column(name = "status_history", nullable = true, unique = false, columnDefinition ="jsonb")
     private List<StatementStatusHistoryDto> statusHistory;
 
 }

@@ -13,15 +13,12 @@ import java.sql.Timestamp;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
+//@Entity
 @Table
 //@TypeDef(name = "json", typeClass = JsonType.class)
 public class StatusHistory {
-    @Id
-    private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "status", nullable = true, unique = false)
+    @Column(name = "status", nullable = true, unique = false)
     private Statement statusHistory;
 
     @Column(name = "time", nullable = false, unique = false)

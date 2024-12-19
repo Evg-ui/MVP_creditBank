@@ -49,7 +49,7 @@ public class DealController {
         log.info("Received request into dealController: {}", request);
         //     try {
         log.info("Creating client and statement");
-        List<LoanOfferDto> offers = dealService.createApplication(request);
+        List<LoanOfferDto> offers = dealService.createNewApplicationAndClient(request);
         log.info("Client and statement are created");
         return new ResponseEntity<>(offers, HttpStatus.OK);
 
