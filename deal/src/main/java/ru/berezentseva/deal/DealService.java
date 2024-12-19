@@ -98,9 +98,9 @@ public class DealService {
                 throw new RuntimeException(errorMessage);
             }
 
-            Statement finalStatement = statement;
+          //  Statement finalStatement = statement;
             List<LoanOfferDto> offers = Arrays.asList(responseEntity.getBody());
-            offers.forEach(offer -> offer.setStatementId(finalStatement.getStatementId()));
+            offers.forEach(offer -> offer.setStatementId(statement.getStatementId()));
             return offers;
 
         } catch (RestClientException e) {
@@ -125,7 +125,6 @@ public class DealService {
        // saveStatement(statement);
         log.info("Выбранное предложение: {}", statement.getAppliedOffer());
         log.info("Данные заявки обновлены!");
-      //  log.info("Выбранное предложение обновлено в базе данных.");
         log.info("Обновляем историю заявки");
         List<StatementStatusHistoryDto> status = new ArrayList<>();
         status = statement.getStatusHistory();
@@ -142,7 +141,6 @@ public class DealService {
         log.info("История заявки: {}", statement.getStatusHistory().toString());
         saveStatement(statement);
         log.info("История заявки обновлена!");
-        //status.add(statusHistory);
     }
 
     public void finishRegistration(UUID statementId, FinishRegistrationRequestDto request) throws IOException {

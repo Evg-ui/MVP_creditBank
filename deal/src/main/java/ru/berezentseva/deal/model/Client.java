@@ -18,50 +18,46 @@ import java.util.UUID;
 @Table
 public class Client {
 
-//    public void setClientUuid(UUID clientUuid) {
-//        this.clientUuid = UUID.randomUUID();
-//    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID clientUuid;
 
-    @Column(name = "last_name", nullable = false, unique = false)
+    @Column(name = "last_name", nullable = false)
     private String lastName;
 
-    @Column(name = "first_name", nullable = false, unique = false)
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
-    @Column(name = "middle_name", nullable = true, unique = false)
+    @Column(name = "middle_name")
     private String middleName;
 
-    @Column(name = "birth_date", nullable = false, unique = false)
+    @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
 
-    @Column(name = "email", nullable = false, unique = false)
+    @Column(name = "email", nullable = false)
     private String email;
 
   //  @OneToOne
     @Enumerated(EnumType.STRING)
-    @Column(name = "gender", nullable = true, unique = false)
+    @Column(name = "gender")
     private Gender gender;
 
     //@OneToOne
     @Enumerated(EnumType.STRING)
-    @Column(name = "marital_status", nullable = true, unique = false)
+    @Column(name = "marital_status")
     private MaritalStatus maritalStatus;
 
-    @Column(name = "dependent_amount", nullable = true, unique = false)
+    @Column(name = "dependent_amount")
     private Integer dependentAmount;
 
     @Column(name = "passport", nullable = false, columnDefinition ="jsonb")
     @JdbcTypeCode(SqlTypes.JSON)
     private Passport passport;
 
-    @Column(name = "employment", nullable = true, columnDefinition ="jsonb")
+    @Column(name = "employment", columnDefinition ="jsonb")
     @JdbcTypeCode(SqlTypes.JSON)
     private Employment employment;
 
-    @Column(name = "account_number", nullable = true, unique = false)
+    @Column(name = "account_number")
     private String accountNumber;
 }

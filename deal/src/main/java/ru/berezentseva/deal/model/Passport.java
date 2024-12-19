@@ -12,23 +12,22 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table
-//@TypeDef(name = "json", typeClass = JsonType.class)
 
 public class Passport {
     @Id
     @GeneratedValue
     private UUID passportUuid;
 
-    @Column(name = "series", nullable = false, unique = false)
+    @Column(name = "series", nullable = false)
     private String series;
 
-    @Column(name = "number", nullable = false, unique = false)
+    @Column(name = "number", nullable = false)
     private String number;
 
-    @Column(name = "issue_branch", nullable = true, unique = false)
+    @Column(name = "issue_branch")
     private String issueBranch;
 
-    @Column(name = "issue_date", nullable = true, unique = false)
+    @Column(name = "issue_date")
     private Date issueDate;
 
     }

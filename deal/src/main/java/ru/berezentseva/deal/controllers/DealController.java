@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
+import ru.berezentseva.calculator.exception.ScoreException;
 import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
 import ru.berezentseva.deal.DealService;
 import ru.berezentseva.deal.repositories.ClientRepository;
@@ -47,12 +48,11 @@ public class DealController {
     @PostMapping("/statement")
     public ResponseEntity<?>  calculateLoan(@RequestBody LoanStatementRequestDto request) {
         log.info("Received request into dealController: {}", request);
-        //     try {
+     //        try {
         log.info("Creating client and statement");
         List<LoanOfferDto> offers = dealService.createNewApplicationAndClient(request);
         log.info("Client and statement are created");
         return new ResponseEntity<>(offers, HttpStatus.OK);
-
 //        } catch (ScoreException | IllegalArgumentException e) {
 //            log.error("Ошибка получения заявки. ", e.getMessage());
 //            return ResponseEntity

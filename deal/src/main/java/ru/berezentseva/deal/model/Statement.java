@@ -20,10 +20,6 @@ import java.util.UUID;
 @Table
 public class Statement {
 
-//    public void setStatementId(UUID statementId) {
-//        this.statementId = UUID.randomUUID();
-//    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID statementId;
@@ -33,30 +29,30 @@ public class Statement {
     private Client clientUuid;
 
     @OneToOne
-    @JoinColumn(name = "credit_id", nullable = true)  // FK
+    @JoinColumn(name = "credit_id")  // FK
     private Credit creditUuid;
 
    // @OneToOne
     @Enumerated(EnumType.STRING)
-    @JoinColumn(name = "status", nullable  = true, unique = false)
+    @JoinColumn(name = "status")
     private ApplicationStatus status;
 
-    @Column(name = "creation_date", nullable = false, unique = false)
+    @Column(name = "creation_date", nullable = false)
     private Timestamp creationDate;
 
     // @Type(type = "jsonb")
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "applied_offer",  nullable = true, columnDefinition ="jsonb")
+    @Column(name = "applied_offer", columnDefinition ="jsonb")
     private LoanOfferDto appliedOffer;
 
-    @Column(name = "sign_date", nullable = true, unique = false)
+    @Column(name = "sign_date")
     private Timestamp signDate;
 
-    @Column(name = "ses_code", nullable = true, unique = false)
+    @Column(name = "ses_code")
     private String sesCode;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "status_history", nullable = true, unique = false, columnDefinition ="jsonb")
+    @Column(name = "status_history", columnDefinition ="jsonb")
     private List<StatementStatusHistoryDto> statusHistory;
 
 }

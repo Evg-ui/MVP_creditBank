@@ -15,17 +15,16 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 //@Entity
 @Table
-//@TypeDef(name = "json", typeClass = JsonType.class)
 public class StatusHistory {
 
-    @Column(name = "status", nullable = true, unique = false)
+    @Column(name = "status")
     private Statement statusHistory;
 
-    @Column(name = "time", nullable = false, unique = false)
+    @Column(name = "time", nullable = false)
     private Timestamp time;
 
   //  @OneToOne
     @Enumerated(EnumType.STRING)
-    @JoinColumn(name = "change_type", nullable = true, unique = false)
+    @JoinColumn(name = "change_type")
     private ChangeType changeType;
 }

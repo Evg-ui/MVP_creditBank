@@ -13,7 +13,6 @@ import java.util.UUID;
 @AllArgsConstructor @NoArgsConstructor
 @Entity
 @Table
- //@TypeDef(name = "json", typeClass = JsonType.class)
 public class Employment {
 
     @Id
@@ -22,23 +21,23 @@ public class Employment {
 
    // @OneToOne
     @Enumerated(EnumType.STRING)
-    @JoinColumn(name = "status", nullable = true, unique = false)
+    @JoinColumn(name = "status")
     private EmploymentStatus status;
 
-    @Column(name = "employment_inn", nullable = false, unique = false)
+    @Column(name = "employment_inn")
     private String employmentInn;
 
-    @Column(name = "salary", nullable = false, unique = false)
+    @Column(name = "salary", nullable = false)
     private BigDecimal salary;
 
   //  @OneToOne
     @Enumerated(EnumType.STRING)
-    @JoinColumn(name = "position", nullable = true, unique = false)
+    @JoinColumn(name = "position")
     private Position position;
 
-    @Column(name = "work_experience_total", nullable = false, unique = false)
+    @Column(name = "work_experience_total", nullable = false)
     private int workExperienceTotal;
 
-    @Column(name = "work_experience_current", nullable = false, unique = false)
+    @Column(name = "work_experience_current", nullable = false)
     private int workExperienceCurrent;
 }
