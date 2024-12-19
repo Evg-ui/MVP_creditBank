@@ -73,11 +73,8 @@ public class DealService {
         
         log.info("Заполняем данные  паспорта:");
         Passport passport = createPassport(request);
-        log.info("Паспорт клиента сохранен!");
-
         log.info("Создание нового клиента");
         Client client = createClient(request, passport);
-
         log.info("Создание новой заявки");
         Statement statement = createStatement(client);
 
@@ -111,6 +108,158 @@ public class DealService {
             log.error("Ошибка при вызове API: ", e);
             throw new RuntimeException("Ошибка при вызове API: " + e.getMessage(), e);
         }
+    }
+
+    public void selectOffer(LoanOfferDto offerDto) throws JsonProcessingException {
+        //проверка существования заявки с таким ID
+        Statement statement = statementRepository.findStatementByStatementId(offerDto.getStatementId()).orElseThrow(()
+                -> new NoSuchElementException("Заявка с указанным ID не найдена: " + offerDto.getStatementId()));
+        log.info("Запрос по заявке: {}", offerDto.getStatementId().toString());
+
+        log.info("Устанавливаем значение json: {}", statement.getAppliedOffer());
+        log.info("Обновляем данные заявки");
+        statement.setStatus(ApplicationStatus.PREAPPROVAL);
+        log.info("Новый статус заявки: {}", statement.getStatus());
+        statement.setAppliedOffer(offerDto);
+        log.info("Поле AppliedOffer сущности: {}", statement.getAppliedOffer());
+       // saveStatement(statement);
+        log.info("Выбранное предложение: {}", statement.getAppliedOffer());
+        log.info("Данные заявки обновлены!");
+      //  log.info("Выбранное предложение обновлено в базе данных.");
+        log.info("Обновляем историю заявки");
+        List<StatementStatusHistoryDto> status = new ArrayList<>();
+        status = statement.getStatusHistory();
+        if (status == null) {
+            status = new ArrayList<>();
+        }
+        StatementStatusHistoryDto statusHistory = new StatementStatusHistoryDto();
+        statusHistory.setStatus(statement.getStatus());
+        statusHistory.setTime(new Timestamp(System.currentTimeMillis()).toLocalDateTime()); // Устанавливаем текущее время
+        statusHistory.setChangeType(ChangeType.AUTOMATIC);
+        log.info("Текущий статус заявки: {}", statusHistory.toString());
+        status.add(statusHistory);
+        statement.setStatusHistory(status);
+        log.info("История заявки: {}", statement.getStatusHistory().toString());
+        saveStatement(statement);
+        log.info("История заявки обновлена!");
+        //status.add(statusHistory);
+    }
+
+    public void finishRegistration(UUID statementId, FinishRegistrationRequestDto request) throws IOException {
+        Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
+                -> new NoSuchElementException("Заявка с указанным ID не найдена: " + statementId));
+
+        Client client = statementRepository.findStatementByClientUuid(statement.getClientUuid()).orElseThrow(()
+                -> new NoSuchElementException("Клиент с указанным ID не найден: " + statement.getClientUuid())).getClientUuid();
+
+        Employment employment = createEmployment(request);
+
+        ScoringDataDto scoringDataDto = createScoringDataDto(request, statement, client);
+
+        // насыщаем клиент
+        log.info("Дополняем данные по клиенту...");
+        client.setAccountNumber(request.getAccountNumber());
+        client.setDependentAmount(request.getDependentAmount());
+        client.setGender(request.getGender());
+        client.setMaritalStatus(request.getMaritalStatus());
+        client.setEmployment(employment);
+        saveClient(client);
+        log.info("Данные по клиенту обновлены!");
+
+        log.info("Отправляем запрос в /calculator/calc");
+        ResponseEntity<CreditDto> responseEntity;
+        CreditDto creditDto;
+        try {
+            responseEntity = restTemplate.exchange(
+                    "http://localhost:8080/calculator/calc",
+                    HttpMethod.POST,
+                    new HttpEntity<>(scoringDataDto, new HttpHeaders()),
+                    CreditDto.class);
+
+            if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+                // Обработка ошибок HTTP
+                String errorMessage = "Ошибка при вызове API: " + responseEntity.getStatusCode() +
+                        ", тело ответа: " + responseEntity.getBody();
+                log.error(errorMessage);
+                throw new RuntimeException(errorMessage);
+            }
+            creditDto = responseEntity.getBody();
+
+            if (creditDto == null) {
+                String errorMessage = "Ответ от API не содержит данных.";
+                log.error(errorMessage);
+                throw new RuntimeException(errorMessage);
+            }
+        } catch (RestClientException e) {
+            //Обработка общих ошибок Rest клиента
+            log.error("Ошибка при вызове API: ", e);
+            throw new RuntimeException("Ошибка при вызове API: " + e.getMessage(), e);
+        }
+
+        log.info("Полученный кредит из calc: {}", creditDto);
+        Credit credit = createCredit(creditDto);
+        statement.setStatus(ApplicationStatus.APPROVED);
+        statement.setCreditUuid(credit);
+        
+        log.info("Обновляем историю заявки");
+        List<StatementStatusHistoryDto> status = new ArrayList<>();
+        status = statement.getStatusHistory();
+        if (status == null) {status = new ArrayList<>();}        
+        StatementStatusHistoryDto statusHistory = new StatementStatusHistoryDto();
+        statusHistory.setStatus(statement.getStatus());
+        statusHistory.setTime(new Timestamp(System.currentTimeMillis()).toLocalDateTime()); // Устанавливаем текущее время
+        statusHistory.setChangeType(ChangeType.AUTOMATIC);
+        log.info("Текущий статус заявки: {}", statusHistory);
+        status.add(statusHistory);
+        statement.setStatusHistory(status);
+        log.info("История заявки: {}", statement.getStatusHistory().toString());
+        saveStatement(statement);
+        log.info("История заявки обновлена!");
+    }
+
+    private @NotNull ScoringDataDto createScoringDataDto(FinishRegistrationRequestDto request, Statement statement, Client client) {
+        ScoringDataDto scoringDataDto = new ScoringDataDto();
+        log.info("Подготавливаем Скоринг...");
+        scoringDataDto.setAmount(statement.getAppliedOffer().getRequestedAmount());
+        scoringDataDto.setTerm(statement.getAppliedOffer().getTerm());
+        scoringDataDto.setFirstName(client.getFirstName());
+        scoringDataDto.setLastName(client.getLastName());
+        scoringDataDto.setMiddleName(client.getMiddleName());
+        scoringDataDto.setGender(request.getGender());
+        scoringDataDto.setBirthdate(client.getBirthDate());
+        log.info("Установленная дата рождения: {}", scoringDataDto.getBirthdate().toString());
+        scoringDataDto.setPassportSeries(client.getPassport().getSeries());
+        scoringDataDto.setPassportNumber(client.getPassport().getNumber());
+        scoringDataDto.setPassportIssueDate(request.getPassportIssueDate());
+        scoringDataDto.setPassportIssueBranch(request.getPassportIssueBrach());
+        scoringDataDto.setMaritalStatus(request.getMaritalStatus());
+        scoringDataDto.setDependentAmount(request.getDependentAmount());
+        scoringDataDto.setEmployment(request.getEmployment());
+        log.info("Установленный  работодатель: {}", scoringDataDto.getEmployment().toString());
+        scoringDataDto.setAccountNumber(request.getAccountNumber());
+        scoringDataDto.setIsSalaryClient(statement.getAppliedOffer().getIsSalaryClient());
+        scoringDataDto.setIsInsuranceEnabled(statement.getAppliedOffer().getIsInsuranceEnabled());
+        log.info("Данные для скоринга готовы!");
+        return scoringDataDto;
+    }
+
+    @NotNull
+    private Employment createEmployment(FinishRegistrationRequestDto request) {
+        Employment employment = new Employment();
+        log.info("UUID работодателя {}", employment.getEmploymentUuid());
+        employment.setStatus(request.getEmployment().getEmploymentStatus());
+        log.info("Статус работника {}", employment.getStatus());
+        employment.setEmploymentInn(request.getEmployment().getEmployerINN());
+        log.info("ИНН работодателя {}", employment.getEmploymentInn());
+        employment.setSalary(request.getEmployment().getSalary());
+        log.info("Зарплата работника {}", employment.getSalary());
+        employment.setPosition(request.getEmployment().getPosition());
+        log.info("Позиция работника {}", employment.getPosition());
+        employment.setWorkExperienceTotal(request.getEmployment().getWorkExperienceTotal());
+        log.info("Общий стаж {}", employment.getWorkExperienceTotal());
+        employment.setWorkExperienceCurrent(request.getEmployment().getWorkExperienceCurrent());
+        log.info("Текущий стаж {}", employment.getWorkExperienceCurrent());
+        return employment;
     }
 
     @NotNull
@@ -158,132 +307,12 @@ public class DealService {
         log.info("Серия {}", passport.getSeries());
         passport.setNumber(request.getPassportNumber());
         log.info("Номер {}", passport.getNumber());
+        log.info("Паспорт клиента сохранен!");
         return passport;
     }
-
-    public void selectOffer(LoanOfferDto offerDto) throws JsonProcessingException {
-        //проверка существования заявки с таким ID
-        Statement statement = statementRepository.findStatementByStatementId(offerDto.getStatementId()).orElseThrow(()
-                -> new NoSuchElementException("Заявка с указанным ID не найдена: " + offerDto.getStatementId()));
-        log.info("Запрос по заявке: {}", offerDto.getStatementId().toString());
-
-        log.info("Устанавливаем значение json: {}", statement.getAppliedOffer());
-        log.info("Обновляем данные заявки");
-        statement.setStatus(ApplicationStatus.PREAPPROVAL);
-        log.info("Новый статус заявки: {}", statement.getStatus());
-        statement.setAppliedOffer(offerDto);
-        log.info("Поле AppliedOffer сущности: {}", statement.getAppliedOffer());
-       // saveStatement(statement);
-        log.info("Выбранное предложение: {}", statement.getAppliedOffer());
-        log.info("Данные заявки обновлены!");
-      //  log.info("Выбранное предложение обновлено в базе данных.");
-        log.info("Обновляем историю заявки");
-        List<StatementStatusHistoryDto> status = new ArrayList<>();
-        status = statement.getStatusHistory();
-        if (status == null) {
-            status = new ArrayList<>();
-        }
-        StatementStatusHistoryDto statusHistory = new StatementStatusHistoryDto();
-        statusHistory.setStatus(statement.getStatus());
-        statusHistory.setTime(new Timestamp(System.currentTimeMillis()).toLocalDateTime()); // Устанавливаем текущее время
-        statusHistory.setChangeType(ChangeType.AUTOMATIC);
-        log.info("Текущий статус заявки: {}", statusHistory.toString());
-        status.add(statusHistory);
-        statement.setStatusHistory(status);
-        log.info("История заявки: {}", statement.getStatusHistory().toString());
-        saveStatement(statement);
-        log.info("История заявки обновлена!");
-        //status.add(statusHistory);
-    }
-
-    public void finishRegistration(UUID statementId, FinishRegistrationRequestDto request) throws IOException {
-        Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
-                -> new NoSuchElementException("Заявка с указанным ID не найдена: " + statementId));
-
-     //  Statement finalStatement = statement;
-
-        Client client = statementRepository.findStatementByClientUuid(statement.getClientUuid()).orElseThrow(()
-                -> new NoSuchElementException("Клиент с указанным ID не найден: " + statement.getClientUuid())).getClientUuid();
-
-        Employment employment = new Employment();
-        log.info("UUID работодателя {}", employment.getEmploymentUuid());
-        employment.setStatus(request.getEmployment().getEmploymentStatus());
-        log.info("Статус работника {}", employment.getStatus());
-        employment.setEmploymentInn(request.getEmployment().getEmployerINN());
-        log.info("ИНН работодателя {}", employment.getEmploymentInn());
-        employment.setSalary(request.getEmployment().getSalary());
-        log.info("Зарплата работника {}", employment.getSalary());
-        employment.setPosition(request.getEmployment().getPosition());
-        log.info("Позиция работника {}", employment.getPosition());
-        employment.setWorkExperienceTotal(request.getEmployment().getWorkExperienceTotal());
-        log.info("Общий стаж {}", employment.getWorkExperienceTotal());
-        employment.setWorkExperienceCurrent(request.getEmployment().getWorkExperienceCurrent());
-        log.info("Текущий стаж {}", employment.getWorkExperienceCurrent());
-
-        ScoringDataDto scoringDataDto = new ScoringDataDto();
-        log.info("Подготавливаем Скоринг...");
-        scoringDataDto.setAmount(statement.getAppliedOffer().getRequestedAmount());
-        scoringDataDto.setTerm(statement.getAppliedOffer().getTerm());
-        scoringDataDto.setFirstName(client.getFirstName());
-        scoringDataDto.setLastName(client.getLastName());
-        scoringDataDto.setMiddleName(client.getMiddleName());
-        scoringDataDto.setGender(request.getGender());
-        scoringDataDto.setBirthdate(client.getBirthDate());
-        log.info("Установленная дата рождения: {}", scoringDataDto.getBirthdate().toString());
-        scoringDataDto.setPassportSeries(client.getPassport().getSeries());
-        scoringDataDto.setPassportNumber(client.getPassport().getNumber());
-        scoringDataDto.setPassportIssueDate(request.getPassportIssueDate());
-        scoringDataDto.setPassportIssueBranch(request.getPassportIssueBrach());
-        scoringDataDto.setMaritalStatus(request.getMaritalStatus());
-        scoringDataDto.setDependentAmount(request.getDependentAmount());
-        scoringDataDto.setEmployment(request.getEmployment());
-        log.info("Установленный  работодатель: {}", scoringDataDto.getEmployment().toString());
-        scoringDataDto.setAccountNumber(request.getAccountNumber());
-        scoringDataDto.setIsSalaryClient(statement.getAppliedOffer().getIsSalaryClient());
-        scoringDataDto.setIsInsuranceEnabled(statement.getAppliedOffer().getIsInsuranceEnabled());
-        log.info("Данные для скоринга готовы!");
-
-        // насыщаем клиент
-        log.info("Дополняем данные по клиенту...");
-        client.setAccountNumber(request.getAccountNumber());
-        client.setDependentAmount(request.getDependentAmount());
-        client.setGender(request.getGender());
-        client.setMaritalStatus(request.getMaritalStatus());
-        client.setEmployment(employment);
-        saveClient(client);
-        log.info("Данные по клиенту обновлены!");
-
-        log.info("Отправляем запрос в /calculator/calc");
-        ResponseEntity<CreditDto> responseEntity;
-        CreditDto creditDto;
-        try {
-            responseEntity = restTemplate.exchange(
-                    "http://localhost:8080/calculator/calc",
-                    HttpMethod.POST,
-                    new HttpEntity<>(scoringDataDto, new HttpHeaders()),
-                    CreditDto.class);
-
-            if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-                // Обработка ошибок HTTP
-                String errorMessage = "Ошибка при вызове API: " + responseEntity.getStatusCode() +
-                        ", тело ответа: " + responseEntity.getBody();
-                log.error(errorMessage);
-                throw new RuntimeException(errorMessage);
-            }
-            creditDto = responseEntity.getBody();
-
-            if (creditDto == null) {
-                String errorMessage = "Ответ от API не содержит данных.";
-                log.error(errorMessage);
-                throw new RuntimeException(errorMessage);
-            }
-        } catch (RestClientException e) {
-            //Обработка общих ошибок Rest клиента
-            log.error("Ошибка при вызове API: ", e);
-            throw new RuntimeException("Ошибка при вызове API: " + e.getMessage(), e);
-        }
-
-        log.info("Полученный кредит из calc: {}", creditDto);
+    
+    @NotNull
+    private Credit createCredit(CreditDto creditDto) {
         Credit credit = new Credit();
         log.info("UUID кредита {}", credit.getCreditUuid());
         credit.setAmount(creditDto.getAmount());
@@ -296,24 +325,8 @@ public class DealService {
         credit.setInsuranceEnabled(creditDto.getIsInsuranceEnabled());
         credit.setCreditStatus(CreditStatus.CALCULATED);
         saveCredit(credit);
-
-        statement.setStatus(ApplicationStatus.APPROVED);
-        statement.setCreditUuid(credit);
-        log.info("Обновляем историю заявки");
-        List<StatementStatusHistoryDto> status = new ArrayList<>();
-        status = statement.getStatusHistory();
-        if (status == null) {
-            status = new ArrayList<>();
-        }
-        StatementStatusHistoryDto statusHistory = new StatementStatusHistoryDto();
-        statusHistory.setStatus(statement.getStatus());
-        statusHistory.setTime(new Timestamp(System.currentTimeMillis()).toLocalDateTime()); // Устанавливаем текущее время
-        statusHistory.setChangeType(ChangeType.AUTOMATIC);
-        log.info("Текущий статус заявки: {}", statusHistory.toString());
-        status.add(statusHistory);
-        statement.setStatusHistory(status);
-        log.info("История заявки: {}", statement.getStatusHistory().toString());
-        saveStatement(statement);
-        log.info("История заявки обновлена!");
+        log.info("Кредит создан!");
+        log.info("UUID созданного кредита {}", credit.getCreditUuid().toString());
+        return credit;
     }
 }
