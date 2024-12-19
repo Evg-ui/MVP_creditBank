@@ -136,7 +136,7 @@ public class DealService {
         statusHistory.setStatus(statement.getStatus());
         statusHistory.setTime(new Timestamp(System.currentTimeMillis()).toLocalDateTime()); // Устанавливаем текущее время
         statusHistory.setChangeType(ChangeType.AUTOMATIC);
-        log.info("Текущий статус заявки: {}", statusHistory.toString());
+        log.info("Текущий статус заявки: {}", statusHistory);
         status.add(statusHistory);
         statement.setStatusHistory(status);
         log.info("История заявки: {}", statement.getStatusHistory().toString());

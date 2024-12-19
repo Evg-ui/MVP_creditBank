@@ -19,7 +19,6 @@ import ru.berezentseva.deal.repositories.StatementRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Iterator;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
