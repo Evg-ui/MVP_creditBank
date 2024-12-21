@@ -119,22 +119,14 @@ public class DealService {
 
     public void selectOffer(LoanOfferDto offerDto) throws JsonProcessingException, StatementException {
         //проверка существования заявки с таким ID
-//        Statement statement = statementRepository.findStatementByStatementId(offerDto.getStatementId()).orElseThrow(()
-//                -> new StatementException("Заявка с указанным ID не найдена: " + offerDto.getStatementId()));
-        Statement statement;
-        try {
-          statement = statementRepository.findStatementByStatementId(offerDto.getStatementId())
-                    .orElseThrow(() -> new StatementException("Заявка с указанным ID не найдена: " + offerDto.getStatementId()));
-        } catch (StatementException e) {
-            throw e;
-        }
+        Statement statement = statementRepository.findStatementByStatementId(offerDto.getStatementId()).orElseThrow(()
+                -> new StatementException("Заявка с указанным ID не найдена: " + offerDto.getStatementId()));
+
         log.info("Запрос по заявке: {}", offerDto.getStatementId().toString());
 
-        log.info("Устанавливаем значение json: {}", statement.getAppliedOffer());
         log.info("Обновляем данные заявки");
         statement.setStatus(ApplicationStatus.PREAPPROVAL);
         log.info("Новый статус заявки: {}", statement.getStatus());
-
         statement.setAppliedOffer(offerDto);
         log.info("Выбранное предложение: {}", statement.getAppliedOffer());
         log.info("Данные заявки обновлены!");
@@ -157,26 +149,13 @@ public class DealService {
     }
 
     public void finishRegistration(UUID statementId, FinishRegistrationRequestDto request) throws StatementException {
-//        Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
-//                -> new NoSuchElementException("Заявка с указанным ID не найдена: " + statementId));
-        Statement statement;
-        try {
-            statement = statementRepository.findStatementByStatementId(statementId)
-                    .orElseThrow(() -> new StatementException("Заявка с указанным ID не найдена: " + statementId));
-        } catch (StatementException e) {
-            throw e;
-        }
+        Statement statement= statementRepository.findStatementByStatementId(statementId).orElseThrow(()
+                -> new NoSuchElementException("Заявка с указанным ID не найдена: " + statementId));
         log.info("Запрос по заявке: {}", statementId.toString());
 
-//        Client client = statementRepository.findStatementByClientUuid(statement.getClientUuid()).orElseThrow(()
-//                -> new NoSuchElementException("Клиент с указанным ID не найден: " + statement.getClientUuid())).getClientUuid();
-        Client client;
-        try {
-            client = statementRepository.findStatementByClientUuid(statement.getClientUuid()).orElseThrow(()
-                     -> new StatementException("Клиент с указанным ID не найден: " + statement.getClientUuid())).getClientUuid();
-        } catch (StatementException e) {
-            throw e;
-        }
+        Client client = statementRepository.findStatementByClientUuid(statement.getClientUuid()).orElseThrow(()
+                -> new NoSuchElementException("Клиент с указанным ID не найден: " + statement.getClientUuid())).getClientUuid();
+      
         log.info("Запрос по заявке: {}", statementId);
 
         Employment employment = createEmployment(request);
@@ -184,12 +163,7 @@ public class DealService {
 
         // насыщаем клиент
         log.info("Дополняем данные по клиенту...");
-        client.setAccountNumber(request.getAccountNumber());
-        client.setDependentAmount(request.getDependentAmount());
-        client.setGender(request.getGender());
-        client.setMaritalStatus(request.getMaritalStatus());
-        client.setEmployment(employment);
-        saveClient(client);
+        updateClientWithFinishRegRequest(request, client, employment);
         log.info("Данные по клиенту обновлены!");
 
         log.info("Отправляем запрос в /calculator/calc");
@@ -250,6 +224,16 @@ public class DealService {
         log.info("История заявки: {}", statement.getStatusHistory().toString());
         saveStatement(statement);
         log.info("История заявки обновлена!");
+    }
+
+    private void updateClientWithFinishRegRequest(FinishRegistrationRequestDto request, Client client, Employment employment) {
+        client.setAccountNumber(request.getAccountNumber());
+        client.setDependentAmount(request.getDependentAmount());
+        client.setGender(request.getGender());
+        client.setMaritalStatus(request.getMaritalStatus());
+        client.setEmployment(employment);
+        saveClient(client);
+        log.info("Данные по клиенту обновлены!");
     }
 
     @NotNull
