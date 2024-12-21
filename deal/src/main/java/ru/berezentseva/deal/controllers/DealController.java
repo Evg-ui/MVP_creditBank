@@ -7,12 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
-import ru.berezentseva.calculator.exception.ScoreException;
 import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
 import ru.berezentseva.deal.DealService;
 import ru.berezentseva.deal.exception.StatementException;
@@ -58,7 +55,7 @@ public class DealController {
         log.info("Client and statement are created");
         return new ResponseEntity<>(offers, HttpStatus.OK);
                         } catch (RestClientException | IllegalArgumentException e) {
-            log.error("Ошибка получения предложений. ", e.getMessage());
+            log.error("Ошибка получения предложений. {}", e.getMessage());
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(e.getMessage());
@@ -94,7 +91,7 @@ public class DealController {
             log.info("Received request into dealController: {} with statementId {} ", request.toString(), statementId);
             dealService.finishRegistration(statementId, request);
         }  catch (RestClientException | IllegalArgumentException e) {
-        log.error("Ошибка формирования кредита. ", e.getMessage());
+        log.error("Ошибка формирования кредита. {}", e.getMessage());
             throw new StatementException("Ошибка при завершении регистрации", e);
     }
     }

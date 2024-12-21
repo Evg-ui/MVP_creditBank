@@ -156,7 +156,7 @@ public class DealService {
         log.info("История заявки обновлена!");
     }
 
-    public void finishRegistration(UUID statementId, FinishRegistrationRequestDto request) throws IOException, StatementException {
+    public void finishRegistration(UUID statementId, FinishRegistrationRequestDto request) throws StatementException {
 //        Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
 //                -> new NoSuchElementException("Заявка с указанным ID не найдена: " + statementId));
         Statement statement;
@@ -177,7 +177,7 @@ public class DealService {
         } catch (StatementException e) {
             throw e;
         }
-        log.info("Запрос по заявке: {}", statementId.toString());
+        log.info("Запрос по заявке: {}", statementId);
 
         Employment employment = createEmployment(request);
         ScoringDataDto scoringDataDto = createScoringDataDto(request, statement, client);
@@ -236,7 +236,7 @@ public class DealService {
         statement.setCreditUuid(credit);
 
         log.info("Обновляем историю заявки");
-        List<StatementStatusHistoryDto> status = new ArrayList<>();
+        List<StatementStatusHistoryDto> status;
         status = statement.getStatusHistory();
         // проверка на наличие ранней истории статусов
         if (status == null) {status = new ArrayList<>();}
