@@ -5,27 +5,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.deal.model.Client;
 import ru.berezentseva.deal.model.Credit;
-import ru.berezentseva.deal.model.Passport;
 import ru.berezentseva.deal.model.Statement;
 import ru.berezentseva.deal.repositories.ClientRepository;
 import ru.berezentseva.deal.repositories.CreditRepository;
-import ru.berezentseva.deal.repositories.PassportRepository;
 import ru.berezentseva.deal.repositories.StatementRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,11 +33,7 @@ class DealServiceTest {
     private DealService dealService;
 
     @Mock
-    private DealService dealServiceMock; // Замокированный объект
-
-//    public DealServiceTest() {
-//        MockitoAnnotations.openMocks(this); // Инициализация моков
-//    }
+    private DealService dealServiceMock;
 
     @Mock
     private RestTemplate testRestTemplate;
@@ -58,12 +45,7 @@ class DealServiceTest {
     private StatementRepository statementRepository;
 
     @Mock
-    private PassportRepository passportRepository;
-
-    @Mock
     private CreditRepository creditRepository;
-
-    private LoanStatementRequestDto request;
 
     private Client client;
 
@@ -71,7 +53,7 @@ class DealServiceTest {
     void setUp() {
         testRestTemplate = new RestTemplate();
 
-        request = new LoanStatementRequestDto();
+        LoanStatementRequestDto request = new LoanStatementRequestDto();
         request.setFirstName("Ivan");
         request.setLastName("Ivanov");
         request.setMiddleName("Ivanovich");
@@ -149,19 +131,6 @@ class DealServiceTest {
         assertEquals(client.getClientUuid(), savedClient.getClientUuid());
     }
 
-    @Test
-    void savePassportInRepositorySuccess() {
-        PassportRepository passportRepository = mock(PassportRepository.class);
-        Passport passport = new Passport();
-        passport.setPassportUuid(UUID.randomUUID());
-        // Настройка заглушки для метода save
-        when(passportRepository.save(any(Passport.class))).thenReturn(passport);
-        // Вызов метода, который должен использовать passportRepository.save()
-        Passport savedPassport = passportRepository.save(passport);
-        // Проверка, что сохраненный паспорт соответствует ожидаемому
-        assertNotNull(savedPassport);
-        assertEquals(passport.getPassportUuid(), savedPassport.getPassportUuid());
-    }
 
     @Test
     void saveCreditInRepositorySuccess() {
@@ -200,18 +169,6 @@ class DealServiceTest {
         clientRepository.save(client);
         // Проверка, что метод save был вызван один раз
         verify(clientRepository, times(1)).save(any(Client.class));
-    }
-
-    @Test
-    void savePassportInDataBaseSuccess() {
-        PassportRepository passportRepository = mock(PassportRepository.class);
-        Passport passport = new Passport();
-        // Настройка заглушки для метода save
-        when(passportRepository.save(any(Passport.class))).thenReturn(passport);
-        // Вызов метода, который должен использовать save()
-        passportRepository.save(passport);
-        // Проверка, что метод save был вызван один раз
-        verify(passportRepository, times(1)).save(any(Passport.class));
     }
 
     @Test
