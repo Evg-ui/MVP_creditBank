@@ -13,10 +13,7 @@ import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
 import ru.berezentseva.deal.DealService;
 import ru.berezentseva.deal.exception.StatementException;
-import ru.berezentseva.deal.repositories.ClientRepository;
-import ru.berezentseva.deal.repositories.StatementRepository;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,10 +29,6 @@ public class DealController {
     @Autowired
     public DealController(DealService dealService)
     {        this.dealService = dealService;    }
-
-    @Autowired
-    private ClientRepository clientRepo;
-    private StatementRepository statementRepo;
 
     @Operation(
             summary = "Расчёт возможных условий кредита. Request - LoanStatementRequestDto, response - List<LoanOfferDto>",
@@ -70,12 +63,11 @@ public class DealController {
                     "Заявка сохраняется."
     )
     @PostMapping("/offer/select")
-    public void selectOffer(@RequestBody LoanOfferDto offerDto) throws IOException, StatementException {
+    public void selectOffer(@RequestBody LoanOfferDto offerDto) throws StatementException {
         try {
             dealService.selectOffer(offerDto);
         } catch (StatementException | IllegalArgumentException e) {
             log.info("Ошибка получения данных о заявке!");
-                 //     throw new RuntimeException(e);
             throw e;
         }
     }
@@ -83,16 +75,20 @@ public class DealController {
     @Operation(
             summary = "Завершение регистрации + полный подсчёт кредита. Request - FinishRegistrationRequestDto, param - String," +
                     " response void.",
-            description = "НАПИСАТЬ И ВЕЗДЕ TRY CATCH ДОБАВИТЬ"
+            description = "На основании данных из финальной заявки по пришедшему Id заявки" +
+                    "осуществляется наполнение данных для скоринга scoringDto и отправка запроса в калькулятор" +
+                    "на основании полученных в ответ данных создается сущность Credit, которая " +
+                    "связывается с заявкой и сохраняется в БД, история заявки наполняется новыми этапом"
+            
     )
     @PostMapping("/calculate/{statementId}")
-    public void calculate(@PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) throws IOException, StatementException {
+    public void calculate(@PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) throws StatementException {
         try {
             log.info("Received request into dealController: {} with statementId {} ", request.toString(), statementId);
             dealService.finishRegistration(statementId, request);
         }  catch (RestClientException | IllegalArgumentException e) {
         log.error("Ошибка формирования кредита. {}", e.getMessage());
-            throw new StatementException("Ошибка при завершении регистрации", e);
+            throw e;
     }
     }
 

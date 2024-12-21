@@ -5,8 +5,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.deal.model.Client;
 import ru.berezentseva.deal.model.Credit;
@@ -19,6 +25,7 @@ import ru.berezentseva.deal.repositories.StatementRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,13 +36,20 @@ import static org.mockito.Mockito.*;
 //@DataJpaTest
 @ExtendWith(MockitoExtension.class)
 //@ExtendWith(SpringExtension.class)
-
+//@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT) //Для тестирования REST контроллера
 class DealServiceTest {
     @InjectMocks
     private DealService dealService;
 
     @Mock
-    private RestTemplate restTemplate;
+    private DealService dealServiceMock; // Замокированный объект
+
+//    public DealServiceTest() {
+//        MockitoAnnotations.openMocks(this); // Инициализация моков
+//    }
+
+    @Mock
+    private RestTemplate testRestTemplate;
 
     @Mock
     private ClientRepository clientRepository;
@@ -51,8 +65,12 @@ class DealServiceTest {
 
     private LoanStatementRequestDto request;
 
+    private Client client;
+
     @BeforeEach
     void setUp() {
+        testRestTemplate = new RestTemplate();
+
         request = new LoanStatementRequestDto();
         request.setFirstName("Ivan");
         request.setLastName("Ivanov");
@@ -62,7 +80,45 @@ class DealServiceTest {
         request.setBirthDate(LocalDate.parse("1990-05-07"));
         request.setPassportSeries("1234");
         request.setPassportNumber("567890");
+
+        Client clientTest = new Client();
+        clientTest.setFirstName("Ivan");
+        clientTest.setLastName("Ivanov");
+        clientTest.setMiddleName("Ivanovich");
+        clientTest.setBirthDate(LocalDate.parse("1990-05-07"));
+
     }
+
+
+//    @Test
+//    public void testSuccessfulApiRequest() {
+//        ResponseEntity<String> response = testRestTemplate.postForEntity("http://localhost:8080/calculator/offers", request, String.class);
+//        assertEquals(HttpStatus.OK, response.getStatusCode());
+//        //проверка содержимого ответа
+//     //   assertTrue(response.getBody().contains("OK"));
+//        //дополнительные проверки
+//    }
+
+//    @Test
+//    public void testNewApplicationAndClientReturnsFourElements() {
+//        LoanStatementRequestDto request = new LoanStatementRequestDto();
+//        request.setFirstName("Evgeniya");
+//        request.setLastName("Berezentseva");
+//        request.setMiddleName("Vladimirovna");
+//        request.setAmount(BigDecimal.valueOf(300000));
+//        request.setTerm(6);
+//        request.setBirthDate(LocalDate.parse("2000-12-01"));
+//        request.setEmail("mail.123@example.com");
+//        request.setPassportSeries("1255");
+//        request.setPassportNumber("567050");
+//
+//
+//        // Выполнение метода
+//        List<LoanOfferDto> offers = dealService.createNewApplicationAndClient(request);
+//
+//        // Проверка результатов
+//        assertEquals(4, offers.size(), "Должно быть 4 оффера");
+//    }
 
     // проверяем, что данные сохраняются в репозиториях
     @Test

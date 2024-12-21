@@ -11,8 +11,6 @@ import java.util.UUID;
 @ToString
 @Getter @Setter
 @AllArgsConstructor @NoArgsConstructor
-@Entity
-@Table
 public class Employment {
 
     @Id

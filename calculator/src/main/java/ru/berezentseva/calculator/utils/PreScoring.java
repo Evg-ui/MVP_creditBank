@@ -18,7 +18,7 @@ public class PreScoring {
 
     public static final String firstName_REGEX =  Pattern.compile("[a-zA-z]{2,30}").toString();
     public static final String lastName_REGEX = Pattern.compile("[a-zA-z]{2,30}").toString();
-    public static final String middleName_REGEX = Pattern.compile("[a-zA-z]{2,30}").toString();
+    public static final String middleName_REGEX = Pattern.compile("^$|[a-zA-z]{2,30}").toString();
     public static final BigDecimal amount_MIN = BigDecimal.valueOf(20000);
     public static final Integer term_MIN = 6;
     private static final String passportSeries_REGEX = Pattern.compile("^\\d{4}$").toString();
@@ -56,11 +56,11 @@ public class PreScoring {
             throw new ScoreException("В фамилии должно быть от 2 до 30 символов на латинице. Введено значение: " + lastName);
         }
 
-        if (middleName == null) {
-            throw new ScoreException("Отчество не должно быть null.");
-        }
+//        if (middleName == null) {
+//            throw new ScoreException("Отчество не должно быть null.");
+//        }
 
-        if (!middleName.matches(middleName_REGEX)) {
+        if (middleName != null && !middleName.matches(middleName_REGEX)) {
             throw new ScoreException("В отчестве должно быть от 2 до 30 символов на латинице. Введено значение: " + middleName);
         }
     }

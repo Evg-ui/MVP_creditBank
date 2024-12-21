@@ -10,8 +10,6 @@ import java.util.UUID;
 @Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table
 
 public class Passport {
     @Id

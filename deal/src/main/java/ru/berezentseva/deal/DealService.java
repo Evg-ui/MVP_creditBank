@@ -1,6 +1,5 @@
 package ru.berezentseva.deal;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,6 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import ru.berezentseva.calculator.DTO.*;
-import ru.berezentseva.calculator.exception.ScoreException;
 import ru.berezentseva.deal.DTO.Enums.ApplicationStatus;
 import ru.berezentseva.deal.DTO.Enums.ChangeType;
 import ru.berezentseva.deal.DTO.Enums.CreditStatus;
@@ -23,7 +21,6 @@ import ru.berezentseva.deal.model.*;
 import ru.berezentseva.deal.repositories.*;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
 
-import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -37,20 +34,17 @@ public class DealService {
     private final ClientRepository clientRepository;
     private final StatementRepository statementRepository;
     private final CreditRepository creditRepository;
-    private final PassportRepository passportRepository;
 
     //Constructor
     @Autowired
     public DealService(RestTemplate restTemplate,
                        ClientRepository clientRepository,
                        StatementRepository statementRepository,
-                       CreditRepository creditRepository,
-                       PassportRepository passportRepository) {
+                       CreditRepository creditRepository) {
         this.restTemplate = restTemplate;
         this.clientRepository = clientRepository;
         this.statementRepository = statementRepository;
         this.creditRepository = creditRepository;
-        this.passportRepository = passportRepository;
     }
 
     @Transactional
@@ -60,17 +54,12 @@ public class DealService {
     Client saveClient(Client client) {return clientRepository.save(client);}
 
     @Transactional
-    void savePassport(Passport passport) {
-        passportRepository.save(passport);
-    }
-
-    @Transactional
     Credit saveCredit(Credit credit) {
         return creditRepository.save(credit);
     }
 
     public List<LoanOfferDto> createNewApplicationAndClient(LoanStatementRequestDto request) {
-        // try catch добавить
+        // try catch добавить?
         log.info("Received request into createApp: {}", request);
 
         log.info("Заполняем данные  паспорта:");
@@ -117,7 +106,7 @@ public class DealService {
         }
     }
 
-    public void selectOffer(LoanOfferDto offerDto) throws JsonProcessingException, StatementException {
+    public void selectOffer(LoanOfferDto offerDto) throws StatementException {
         //проверка существования заявки с таким ID
         Statement statement = statementRepository.findStatementByStatementId(offerDto.getStatementId()).orElseThrow(()
                 -> new StatementException("Заявка с указанным ID не найдена: " + offerDto.getStatementId()));
@@ -126,29 +115,14 @@ public class DealService {
 
         log.info("Обновляем данные заявки");
         statement.setStatus(ApplicationStatus.PREAPPROVAL);
-        log.info("Новый статус заявки: {}", statement.getStatus());
         statement.setAppliedOffer(offerDto);
-        log.info("Выбранное предложение: {}", statement.getAppliedOffer());
         log.info("Данные заявки обновлены!");
 
         log.info("Обновляем историю заявки");
-        List<StatementStatusHistoryDto> status = new ArrayList<>();
-        status = statement.getStatusHistory();
-        // проверка на наличие ранней истории статусов
-        if (status == null) {status = new ArrayList<>();}
-        StatementStatusHistoryDto statusHistory = new StatementStatusHistoryDto();
-        statusHistory.setStatus(statement.getStatus());
-        statusHistory.setTime(new Timestamp(System.currentTimeMillis()).toLocalDateTime()); // Устанавливаем текущее время
-        statusHistory.setChangeType(ChangeType.AUTOMATIC);
-        log.info("Текущий статус заявки: {}", statusHistory);
-        status.add(statusHistory);
-        statement.setStatusHistory(status);
-        log.info("История заявки: {}", statement.getStatusHistory().toString());
-        saveStatement(statement);
-        log.info("История заявки обновлена!");
+        updateStatusHistoryFieldStatement(statement, ChangeType.AUTOMATIC);
     }
 
-    public void finishRegistration(UUID statementId, FinishRegistrationRequestDto request) throws StatementException {
+    public void finishRegistration(UUID statementId, FinishRegistrationRequestDto request) {
         Statement statement= statementRepository.findStatementByStatementId(statementId).orElseThrow(()
                 -> new NoSuchElementException("Заявка с указанным ID не найдена: " + statementId));
         log.info("Запрос по заявке: {}", statementId.toString());
@@ -161,7 +135,7 @@ public class DealService {
         Employment employment = createEmployment(request);
         ScoringDataDto scoringDataDto = createScoringDataDto(request, statement, client);
 
-        // насыщаем клиент
+        // насыщаем клиента
         log.info("Дополняем данные по клиенту...");
         updateClientWithFinishRegRequest(request, client, employment);
         log.info("Данные по клиенту обновлены!");
@@ -206,10 +180,15 @@ public class DealService {
 
         log.info("Полученный кредит из calc: {}", creditDto);
         Credit credit = createCredit(creditDto);
+        
         statement.setStatus(ApplicationStatus.APPROVED);
         statement.setCreditUuid(credit);
 
         log.info("Обновляем историю заявки");
+        updateStatusHistoryFieldStatement(statement, ChangeType.AUTOMATIC);
+    }
+
+    private void updateStatusHistoryFieldStatement(Statement statement, ChangeType changeType) {
         List<StatementStatusHistoryDto> status;
         status = statement.getStatusHistory();
         // проверка на наличие ранней истории статусов
@@ -217,7 +196,7 @@ public class DealService {
         StatementStatusHistoryDto statusHistory = new StatementStatusHistoryDto();
         statusHistory.setStatus(statement.getStatus());
         statusHistory.setTime(new Timestamp(System.currentTimeMillis()).toLocalDateTime()); // Устанавливаем текущее время
-        statusHistory.setChangeType(ChangeType.AUTOMATIC);
+        statusHistory.setChangeType(changeType);
         log.info("Текущий статус заявки: {}", statusHistory);
         status.add(statusHistory);
         statement.setStatusHistory(status);

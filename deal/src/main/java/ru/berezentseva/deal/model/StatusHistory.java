@@ -13,8 +13,6 @@ import java.sql.Timestamp;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-//@Entity
-@Table
 public class StatusHistory {
 
     @Column(name = "status")
