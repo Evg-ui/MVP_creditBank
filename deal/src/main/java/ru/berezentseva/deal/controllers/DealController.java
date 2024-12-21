@@ -82,7 +82,7 @@ public class DealController {
             
     )
     @PostMapping("/calculate/{statementId}")
-    public void calculate(@PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) throws StatementException {
+    public void calculate(@PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) {
         try {
             log.info("Received request into dealController: {} with statementId {} ", request.toString(), statementId);
             dealService.finishRegistration(statementId, request);

@@ -230,7 +230,7 @@ public class DealService {
         scoringDataDto.setPassportSeries(client.getPassport().getSeries());
         scoringDataDto.setPassportNumber(client.getPassport().getNumber());
         scoringDataDto.setPassportIssueDate(request.getPassportIssueDate());
-        scoringDataDto.setPassportIssueBranch(request.getPassportIssueBrach());
+        scoringDataDto.setPassportIssueBranch(request.getPassportIssueBranch());
         scoringDataDto.setMaritalStatus(request.getMaritalStatus());
         scoringDataDto.setDependentAmount(request.getDependentAmount());
         scoringDataDto.setEmployment(request.getEmployment());
@@ -271,7 +271,6 @@ public class DealService {
         log.info("Сохраняем заявку");
         saveStatement(statement);
         log.info("Заявка создана");
-        log.info("UUID заявки {}", statement.getStatementId().toString());
         return statement;
     }
 
@@ -294,7 +293,6 @@ public class DealService {
         log.info("Сохраняем клиента");
         saveClient(client);
         log.info("Клиент создан!");
-        log.info("UUID клиента {}", client.getClientUuid().toString());
         return client;
     }
 
@@ -325,7 +323,6 @@ public class DealService {
         credit.setCreditStatus(CreditStatus.CALCULATED);
         saveCredit(credit);
         log.info("Кредит создан!");
-        log.info("UUID созданного кредита {}", credit.getCreditUuid().toString());
         return credit;
     }
 }

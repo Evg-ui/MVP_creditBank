@@ -15,7 +15,7 @@ public class FinishRegistrationRequestDto {
     private MaritalStatus maritalStatus;
     private Integer dependentAmount;
     private LocalDate passportIssueDate;
-    private String passportIssueBrach;
+    private String passportIssueBranch;
     private EmploymentDto employment;
     private String accountNumber;
 }

@@ -6,8 +6,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
+import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
+import ru.berezentseva.deal.DTO.Enums.ApplicationStatus;
+import ru.berezentseva.deal.exception.StatementException;
 import ru.berezentseva.deal.model.Client;
 import ru.berezentseva.deal.model.Credit;
 import ru.berezentseva.deal.model.Statement;
@@ -17,26 +21,21 @@ import ru.berezentseva.deal.repositories.StatementRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-//@SpringBootTest
-//@DataJpaTest
 @ExtendWith(MockitoExtension.class)
-//@ExtendWith(SpringExtension.class)
-//@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT) //Для тестирования REST контроллера
 class DealServiceTest {
     @InjectMocks
     private DealService dealService;
 
     @Mock
-    private DealService dealServiceMock;
-
-    @Mock
-    private RestTemplate testRestTemplate;
+    private RestTemplate restTemplate;
 
     @Mock
     private ClientRepository clientRepository;
@@ -49,58 +48,86 @@ class DealServiceTest {
 
     private Client client;
 
+    private LoanStatementRequestDto request;
+
     @BeforeEach
     void setUp() {
-        testRestTemplate = new RestTemplate();
+        client = new Client();
+           }
 
-        LoanStatementRequestDto request = new LoanStatementRequestDto();
-        request.setFirstName("Ivan");
-        request.setLastName("Ivanov");
-        request.setMiddleName("Ivanovich");
-        request.setAmount(BigDecimal.valueOf(100000));
-        request.setTerm(12);
-        request.setBirthDate(LocalDate.parse("1990-05-07"));
-        request.setPassportSeries("1234");
-        request.setPassportNumber("567890");
+    @Test
+    void testSavedOfferEqualsLoanOfferSuccess() throws StatementException {
+        // Создаем mock-объект для StatementRepository
+        StatementRepository statementRepositoryMock = mock(StatementRepository.class);
 
-        Client clientTest = new Client();
-        clientTest.setFirstName("Ivan");
-        clientTest.setLastName("Ivanov");
-        clientTest.setMiddleName("Ivanovich");
-        clientTest.setBirthDate(LocalDate.parse("1990-05-07"));
+        // Создаем экземпляр DealService с mock-объектом
+        DealService dealService = new DealService(restTemplate, clientRepository, statementRepositoryMock, creditRepository);
 
+        // Создаем тестовый LoanOfferDto
+        LoanOfferDto offerDto = new LoanOfferDto();
+        offerDto.setStatementId(UUID.randomUUID());
+
+        // Создаем тестовый Statement
+        Statement statement = new Statement();
+        statement.setStatementId(offerDto.getStatementId());
+
+        // Задаем поведение mock-объекта statementRepository
+        when(statementRepositoryMock.findStatementByStatementId(offerDto.getStatementId())).thenReturn(Optional.of(statement));
+
+        dealService.selectOffer(offerDto);
+
+        // Проверка на соответствие offerDto
+        assertEquals(offerDto, statement.getAppliedOffer());
     }
 
+    @Test
+    void testChangeStatementStatusSuccess() throws StatementException {
+        StatementRepository statementRepositoryMock = mock(StatementRepository.class);
 
-//    @Test
-//    public void testSuccessfulApiRequest() {
-//        ResponseEntity<String> response = testRestTemplate.postForEntity("http://localhost:8080/calculator/offers", request, String.class);
-//        assertEquals(HttpStatus.OK, response.getStatusCode());
-//        //проверка содержимого ответа
-//     //   assertTrue(response.getBody().contains("OK"));
-//        //дополнительные проверки
-//    }
+        DealService dealService = new DealService(restTemplate, clientRepository, statementRepositoryMock, creditRepository);
 
-//    @Test
-//    public void testNewApplicationAndClientReturnsFourElements() {
-//        LoanStatementRequestDto request = new LoanStatementRequestDto();
-//        request.setFirstName("Evgeniya");
-//        request.setLastName("Berezentseva");
-//        request.setMiddleName("Vladimirovna");
-//        request.setAmount(BigDecimal.valueOf(300000));
-//        request.setTerm(6);
-//        request.setBirthDate(LocalDate.parse("2000-12-01"));
-//        request.setEmail("mail.123@example.com");
-//        request.setPassportSeries("1255");
-//        request.setPassportNumber("567050");
-//
-//
-//        // Выполнение метода
-//        List<LoanOfferDto> offers = dealService.createNewApplicationAndClient(request);
-//
-//        // Проверка результатов
-//        assertEquals(4, offers.size(), "Должно быть 4 оффера");
-//    }
+        // Создаем тестовый LoanOfferDto
+        LoanOfferDto offerDto = new LoanOfferDto();
+        offerDto.setStatementId(UUID.randomUUID());
+
+        // Создаем тестовый Statement
+        Statement statement = new Statement();
+        statement.setStatementId(offerDto.getStatementId());
+
+        when(statementRepositoryMock.findStatementByStatementId(offerDto.getStatementId())).thenReturn(Optional.of(statement));
+
+        dealService.selectOffer(offerDto);
+
+        // Проверка
+        assertEquals(ApplicationStatus.PREAPPROVAL, statement.getStatus());
+    }
+
+    @Test
+    // проверка возврата 4 предложений
+    void testNewApplicationAndClientReturnsFourElementsSuccess() {
+        request = new LoanStatementRequestDto();
+        request.setFirstName("Evgeniya");
+        request.setLastName("Berezentseva");
+        request.setMiddleName("Vladimirovna");
+        request.setAmount(BigDecimal.valueOf(300000));
+        request.setTerm(6);
+        request.setBirthDate(LocalDate.parse("2000-12-01"));
+        request.setEmail("mail.123@example.com");
+        request.setPassportSeries("1255");
+        request.setPassportNumber("567050");
+
+        LoanOfferDto[] mockOffers = {new LoanOfferDto(), new LoanOfferDto(), new LoanOfferDto(), new LoanOfferDto()};
+
+        when(clientRepository.save(any(Client.class))).thenReturn(client);
+
+        // Мокирование RestTemplate
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(LoanOfferDto[].class)))
+                .thenReturn(new ResponseEntity<>(mockOffers, HttpStatus.OK));
+        // Выполнение метода
+        List<LoanOfferDto> offers = dealService.createNewApplicationAndClient(request);
+        // Проверка количества возвращенных предложений
+        assertEquals(4, offers.size(), "Должно быть 4 оффера");
+    }
 
     // проверяем, что данные сохраняются в репозиториях
     @Test
