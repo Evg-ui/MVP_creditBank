@@ -7,14 +7,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import ru.berezentseva.calculator.DTO.*;
+import ru.berezentseva.calculator.exception.ScoreException;
 import ru.berezentseva.deal.DTO.Enums.ApplicationStatus;
 import ru.berezentseva.deal.DTO.Enums.ChangeType;
 import ru.berezentseva.deal.DTO.Enums.CreditStatus;
 import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
 import ru.berezentseva.deal.DTO.StatementStatusHistoryDto;
+import ru.berezentseva.deal.exception.StatementException;
 import ru.berezentseva.deal.model.*;
 import ru.berezentseva.deal.repositories.*;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
@@ -28,8 +32,6 @@ import java.util.*;
 @Service
 @Slf4j
 public class DealService {
-
-
     private final RestTemplate restTemplate;
 
     private final ClientRepository clientRepository;
@@ -70,7 +72,7 @@ public class DealService {
     public List<LoanOfferDto> createNewApplicationAndClient(LoanStatementRequestDto request) {
         // try catch добавить
         log.info("Received request into createApp: {}", request);
-        
+
         log.info("Заполняем данные  паспорта:");
         Passport passport = createPassport(request);
         log.info("Создание нового клиента");
@@ -79,9 +81,7 @@ public class DealService {
         Statement statement = createStatement(client);
 
 //         Отправка запроса на /calculator/offers.
-//          try catch надо
         log.info("Отправляем запрос в /calculator/offers");
-
         ResponseEntity<LoanOfferDto[]> responseEntity;
         try {
             responseEntity = restTemplate.exchange(
@@ -93,44 +93,57 @@ public class DealService {
             if (!responseEntity.getStatusCode().is2xxSuccessful()) {
                 // Обработка ошибок HTTP
                 String errorMessage = "Ошибка при вызове API: " + responseEntity.getStatusCode() +
-                        ", тело ответа: " + responseEntity.getBody();
+                        ", тело ответа: " + Arrays.toString(responseEntity.getBody());
                 log.error(errorMessage);
                 throw new RuntimeException(errorMessage);
             }
 
-          //  Statement finalStatement = statement;
             List<LoanOfferDto> offers = Arrays.asList(responseEntity.getBody());
             offers.forEach(offer -> offer.setStatementId(statement.getStatementId()));
             return offers;
 
+        } catch (HttpClientErrorException e) {
+            // Обработка ошибок клиента (4xx)
+            log.error("Ошибка клиента при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
+            throw e;
+        } catch (HttpServerErrorException e) {
+            // Обработка ошибок сервера (5xx)
+            log.error("Ошибка сервера при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
+            throw e;
         } catch (RestClientException e) {
-            //Обработка общих ошибок Rest клиента
+            // Обработка общих ошибок Rest клиента
             log.error("Ошибка при вызове API: ", e);
-            throw new RuntimeException("Ошибка при вызове API: " + e.getMessage(), e);
+            throw e;
         }
     }
 
-    public void selectOffer(LoanOfferDto offerDto) throws JsonProcessingException {
+    public void selectOffer(LoanOfferDto offerDto) throws JsonProcessingException, StatementException {
         //проверка существования заявки с таким ID
-        Statement statement = statementRepository.findStatementByStatementId(offerDto.getStatementId()).orElseThrow(()
-                -> new NoSuchElementException("Заявка с указанным ID не найдена: " + offerDto.getStatementId()));
+//        Statement statement = statementRepository.findStatementByStatementId(offerDto.getStatementId()).orElseThrow(()
+//                -> new StatementException("Заявка с указанным ID не найдена: " + offerDto.getStatementId()));
+        Statement statement;
+        try {
+          statement = statementRepository.findStatementByStatementId(offerDto.getStatementId())
+                    .orElseThrow(() -> new StatementException("Заявка с указанным ID не найдена: " + offerDto.getStatementId()));
+        } catch (StatementException e) {
+            throw e;
+        }
         log.info("Запрос по заявке: {}", offerDto.getStatementId().toString());
 
         log.info("Устанавливаем значение json: {}", statement.getAppliedOffer());
         log.info("Обновляем данные заявки");
         statement.setStatus(ApplicationStatus.PREAPPROVAL);
         log.info("Новый статус заявки: {}", statement.getStatus());
+
         statement.setAppliedOffer(offerDto);
-        log.info("Поле AppliedOffer сущности: {}", statement.getAppliedOffer());
-       // saveStatement(statement);
         log.info("Выбранное предложение: {}", statement.getAppliedOffer());
         log.info("Данные заявки обновлены!");
+
         log.info("Обновляем историю заявки");
         List<StatementStatusHistoryDto> status = new ArrayList<>();
         status = statement.getStatusHistory();
-        if (status == null) {
-            status = new ArrayList<>();
-        }
+        // проверка на наличие ранней истории статусов
+        if (status == null) {status = new ArrayList<>();}
         StatementStatusHistoryDto statusHistory = new StatementStatusHistoryDto();
         statusHistory.setStatus(statement.getStatus());
         statusHistory.setTime(new Timestamp(System.currentTimeMillis()).toLocalDateTime()); // Устанавливаем текущее время
@@ -143,15 +156,30 @@ public class DealService {
         log.info("История заявки обновлена!");
     }
 
-    public void finishRegistration(UUID statementId, FinishRegistrationRequestDto request) throws IOException {
-        Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
-                -> new NoSuchElementException("Заявка с указанным ID не найдена: " + statementId));
+    public void finishRegistration(UUID statementId, FinishRegistrationRequestDto request) throws IOException, StatementException {
+//        Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
+//                -> new NoSuchElementException("Заявка с указанным ID не найдена: " + statementId));
+        Statement statement;
+        try {
+            statement = statementRepository.findStatementByStatementId(statementId)
+                    .orElseThrow(() -> new StatementException("Заявка с указанным ID не найдена: " + statementId));
+        } catch (StatementException e) {
+            throw e;
+        }
+        log.info("Запрос по заявке: {}", statementId.toString());
 
-        Client client = statementRepository.findStatementByClientUuid(statement.getClientUuid()).orElseThrow(()
-                -> new NoSuchElementException("Клиент с указанным ID не найден: " + statement.getClientUuid())).getClientUuid();
+//        Client client = statementRepository.findStatementByClientUuid(statement.getClientUuid()).orElseThrow(()
+//                -> new NoSuchElementException("Клиент с указанным ID не найден: " + statement.getClientUuid())).getClientUuid();
+        Client client;
+        try {
+            client = statementRepository.findStatementByClientUuid(statement.getClientUuid()).orElseThrow(()
+                     -> new StatementException("Клиент с указанным ID не найден: " + statement.getClientUuid())).getClientUuid();
+        } catch (StatementException e) {
+            throw e;
+        }
+        log.info("Запрос по заявке: {}", statementId.toString());
 
         Employment employment = createEmployment(request);
-
         ScoringDataDto scoringDataDto = createScoringDataDto(request, statement, client);
 
         // насыщаем клиент
@@ -188,21 +216,30 @@ public class DealService {
                 log.error(errorMessage);
                 throw new RuntimeException(errorMessage);
             }
+        } catch (HttpClientErrorException e) {
+            // Обработка ошибок клиента (4xx)
+            log.error("Ошибка клиента при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
+            throw e;
+        } catch (HttpServerErrorException e) {
+            // Обработка ошибок сервера (5xx)
+            log.error("Ошибка сервера при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
+            throw e;
         } catch (RestClientException e) {
             //Обработка общих ошибок Rest клиента
             log.error("Ошибка при вызове API: ", e);
-            throw new RuntimeException("Ошибка при вызове API: " + e.getMessage(), e);
+            throw e;
         }
 
         log.info("Полученный кредит из calc: {}", creditDto);
         Credit credit = createCredit(creditDto);
         statement.setStatus(ApplicationStatus.APPROVED);
         statement.setCreditUuid(credit);
-        
+
         log.info("Обновляем историю заявки");
         List<StatementStatusHistoryDto> status = new ArrayList<>();
         status = statement.getStatusHistory();
-        if (status == null) {status = new ArrayList<>();}        
+        // проверка на наличие ранней истории статусов
+        if (status == null) {status = new ArrayList<>();}
         StatementStatusHistoryDto statusHistory = new StatementStatusHistoryDto();
         statusHistory.setStatus(statement.getStatus());
         statusHistory.setTime(new Timestamp(System.currentTimeMillis()).toLocalDateTime()); // Устанавливаем текущее время
@@ -215,7 +252,8 @@ public class DealService {
         log.info("История заявки обновлена!");
     }
 
-    private @NotNull ScoringDataDto createScoringDataDto(FinishRegistrationRequestDto request, Statement statement, Client client) {
+    @NotNull
+    private ScoringDataDto createScoringDataDto(FinishRegistrationRequestDto request, Statement statement, Client client) {
         ScoringDataDto scoringDataDto = new ScoringDataDto();
         log.info("Подготавливаем Скоринг...");
         scoringDataDto.setAmount(statement.getAppliedOffer().getRequestedAmount());

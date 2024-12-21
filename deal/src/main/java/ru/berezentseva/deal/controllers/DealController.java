@@ -7,11 +7,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestClientException;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.calculator.exception.ScoreException;
 import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
 import ru.berezentseva.deal.DealService;
+import ru.berezentseva.deal.exception.StatementException;
 import ru.berezentseva.deal.repositories.ClientRepository;
 import ru.berezentseva.deal.repositories.StatementRepository;
 
@@ -32,7 +36,7 @@ public class DealController {
     public DealController(DealService dealService)
     {        this.dealService = dealService;    }
 
-    @Autowired     // автоматическое внедрение зависимостей в компоненты приложения
+    @Autowired
     private ClientRepository clientRepo;
     private StatementRepository statementRepo;
 
@@ -47,18 +51,18 @@ public class DealController {
     // расчёт возможных условий кредита. Request - LoanStatementRequestDto, response - List<LoanOfferDto>
     @PostMapping("/statement")
     public ResponseEntity<?>  calculateLoan(@RequestBody LoanStatementRequestDto request) {
-        log.info("Received request into dealController: {}", request);
-     //        try {
+        log.info("Received request into dealController: {}", request.toString());
+             try {
         log.info("Creating client and statement");
         List<LoanOfferDto> offers = dealService.createNewApplicationAndClient(request);
         log.info("Client and statement are created");
         return new ResponseEntity<>(offers, HttpStatus.OK);
-//        } catch (ScoreException | IllegalArgumentException e) {
-//            log.error("Ошибка получения заявки. ", e.getMessage());
-//            return ResponseEntity
-//                    .status(HttpStatus.BAD_REQUEST)
-//                    .body(e.getMessage());
-//        }
+                        } catch (RestClientException | IllegalArgumentException e) {
+            log.error("Ошибка получения предложений. ", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
     }
     @Operation(
             summary = "Выбор одного из предложений. Request - LoanOfferDto, response - void + сохранение данных в БД",
@@ -69,8 +73,14 @@ public class DealController {
                     "Заявка сохраняется."
     )
     @PostMapping("/offer/select")
-    public void selectOffer(@RequestBody LoanOfferDto offerDto) throws IOException {
-        dealService.selectOffer(offerDto);
+    public void selectOffer(@RequestBody LoanOfferDto offerDto) throws IOException, StatementException {
+        try {
+            dealService.selectOffer(offerDto);
+        } catch (StatementException | IllegalArgumentException e) {
+            log.info("Ошибка получения данных о заявке!");
+                 //     throw new RuntimeException(e);
+            throw e;
+        }
     }
 
     @Operation(
@@ -79,8 +89,14 @@ public class DealController {
             description = "НАПИСАТЬ И ВЕЗДЕ TRY CATCH ДОБАВИТЬ"
     )
     @PostMapping("/calculate/{statementId}")
-    public void calculate(@PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) throws IOException {
-        dealService.finishRegistration(statementId, request);
+    public void calculate(@PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) throws IOException, StatementException {
+        try {
+            log.info("Received request into dealController: {} with statementId {} ", request.toString(), statementId);
+            dealService.finishRegistration(statementId, request);
+        }  catch (RestClientException | IllegalArgumentException e) {
+        log.error("Ошибка формирования кредита. ", e.getMessage());
+            throw new StatementException("Ошибка при завершении регистрации", e);
+    }
     }
 
 }
