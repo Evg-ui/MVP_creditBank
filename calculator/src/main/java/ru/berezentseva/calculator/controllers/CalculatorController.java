@@ -67,7 +67,7 @@ public class CalculatorController {
     // валидация присланных данных + скоринг данных + полный расчет параметров кредита.
     // Request - ScoringDataDto, response - CreditDto.
     @PostMapping("/calc")
-    public ResponseEntity<CreditDto> calculateCredit(@RequestBody ScoringDataDto scoringData) {
+    public ResponseEntity<?> calculateCredit(@RequestBody ScoringDataDto scoringData) {
         log.info("Метод /calculator/calc Запрос: {}", scoringData.toString());
         try {
         CreditDto creditDto = calculatorService.calcCredit(scoringData);
@@ -75,9 +75,8 @@ public class CalculatorController {
         } catch (ScoreException e) {
             log.error(e.getMessage());
             return ResponseEntity
-                    .unprocessableEntity()
-                    .header("Error", e.getMessage())
-                    .build();
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
         }
     }
 }

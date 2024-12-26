@@ -348,14 +348,8 @@ public static final BigDecimal baseRate = BigDecimal.valueOf(15);
         log.info(baseRate.toString());
         List<LoanOfferDto> offers = calculatorService.getLoanOffers(request);
         log.info("Stop getLoanOffers...");
-      //  BigDecimal baseRate = calculatorService.getBaseRate();
-      //  offers = calculatorService.getLoanOffers(request);
 
         // Проверка результатов
         assertEquals(4, offers.size(), "Должно быть 4 оффера");
-
-        // Дополнительные проверки на содержание офферов
-      //  assertEquals(4, offers.get(0).getRate().intValue(), "Первый оффер должен иметь наивысшую процентную ставку");
-    //    assertEquals(1, offers.get(1).getRate().intValue(), "Второй оффер должен иметь вторую по величине процентную ставку");
     }
 }
