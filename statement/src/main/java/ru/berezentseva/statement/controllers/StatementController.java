@@ -10,8 +10,8 @@ import org.springframework.web.client.RestClientException;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.calculator.exception.ScoreException;
-import ru.berezentseva.deal.exception.StatementException;
 import ru.berezentseva.statement.StatementService;
+import ru.berezentseva.statement.exception.StatementException;
 
 import java.util.List;
 
@@ -41,10 +41,9 @@ public class StatementController {
     @PostMapping
     public ResponseEntity<?> returnOffersAfterPrescoring(@RequestBody LoanStatementRequestDto request) {
 
-          //  log.info("Received request into statementController: {}", request.toString());
+            log.info("Received request into statementController: {}", request.toString());
 
         try {
-    //        log.info("Creating client and statement");
             List<LoanOfferDto> offers = statementService.returnOffersAfterPrescoring(request);
             return new ResponseEntity<>(offers, HttpStatus.OK);
         } catch (ScoreException | RestClientException | IllegalArgumentException e) {
@@ -62,8 +61,8 @@ public class StatementController {
     @PostMapping("/offer")
     public void selectOffer(@RequestBody LoanOfferDto offerDto) throws StatementException {
         try {
-            statementService.selectOfferFromlDeal(offerDto);
-        } catch (StatementException | IllegalArgumentException e) {
+            statementService.selectOfferFromDeal(offerDto);
+        } catch (RestClientException | IllegalArgumentException e) {
             log.info("Ошибка получения данных о заявке!");
             throw e;
         }

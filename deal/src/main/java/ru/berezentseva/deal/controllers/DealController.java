@@ -12,7 +12,7 @@ import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
 import ru.berezentseva.deal.DealService;
-import ru.berezentseva.deal.exception.StatementException;
+import ru.berezentseva.deal.exception.DealException;
 
 import java.util.List;
 import java.util.UUID;
@@ -32,7 +32,7 @@ public class DealController {
 
     @Operation(
             summary = "Расчёт возможных условий кредита. Request - LoanStatementRequestDto, response - List<LoanOfferDto>",
-            description = "На основании запроса на кредит LoanStatementRequestDto"+
+            description = "На основании запроса на кредит LoanStatementRequestDto "+
                     "Создаются и сохраняются в БД 2 сущности: Client и Statement с ранее сохраненным UUID клиента. "+
                     "Направляется POST на /calculator/offers с присвоением каждому полученному элементу StatementID. "+
                     "Результат - 4 предложения в сортировке от худшего к лучшему"
@@ -63,10 +63,10 @@ public class DealController {
                     "Заявка сохраняется."
     )
     @PostMapping("/offer/select")
-    public void selectOffer(@RequestBody LoanOfferDto offerDto) throws StatementException {
+    public void selectOffer(@RequestBody LoanOfferDto offerDto) throws DealException {
         try {
             dealService.selectOffer(offerDto);
-        } catch (StatementException | IllegalArgumentException e) {
+        } catch (DealException | IllegalArgumentException e) {
             log.info("Ошибка получения данных о заявке!");
             throw e;
         }
@@ -75,8 +75,8 @@ public class DealController {
     @Operation(
             summary = "Завершение регистрации + полный подсчёт кредита. Request - FinishRegistrationRequestDto, param - String," +
                     " response void.",
-            description = "На основании данных из финальной заявки по пришедшему Id заявки" +
-                    "осуществляется наполнение данных для скоринга scoringDto и отправка запроса в калькулятор" +
+            description = "На основании данных из финальной заявки по пришедшему Id заявки " +
+                    "осуществляется наполнение данных для скоринга scoringDto и отправка запроса в калькулятор " +
                     "на основании полученных в ответ данных создается сущность Credit, которая " +
                     "связывается с заявкой и сохраняется в БД, история заявки наполняется новыми этапом"
             

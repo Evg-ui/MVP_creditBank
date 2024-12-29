@@ -11,7 +11,7 @@ import org.springframework.web.client.RestTemplate;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.deal.DTO.Enums.ApplicationStatus;
-import ru.berezentseva.deal.exception.StatementException;
+import ru.berezentseva.deal.exception.DealException;
 import ru.berezentseva.deal.model.Client;
 import ru.berezentseva.deal.model.Credit;
 import ru.berezentseva.deal.model.Statement;
@@ -56,7 +56,7 @@ class DealServiceTest {
            }
 
     @Test
-    void testSavedOfferEqualsLoanOfferSuccess() throws StatementException {
+    void testSavedOfferEqualsLoanOfferSuccess() throws DealException {
         // Создаем mock-объект для StatementRepository
         StatementRepository statementRepositoryMock = mock(StatementRepository.class);
 
@@ -81,7 +81,7 @@ class DealServiceTest {
     }
 
     @Test
-    void testChangeStatementStatusSuccess() throws StatementException {
+    void testChangeStatementStatusSuccess() throws DealException {
         StatementRepository statementRepositoryMock = mock(StatementRepository.class);
 
         DealService dealService = new DealService(restTemplate, clientRepository, statementRepositoryMock, creditRepository);

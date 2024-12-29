@@ -1,4 +1,4 @@
-package ru.berezentseva.deal.exception;
+package ru.berezentseva.statement.exception;
 
 public class StatementException extends Exception {
     public StatementException(String message) {

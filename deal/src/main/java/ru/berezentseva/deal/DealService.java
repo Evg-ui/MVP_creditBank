@@ -16,7 +16,7 @@ import ru.berezentseva.deal.DTO.Enums.ChangeType;
 import ru.berezentseva.deal.DTO.Enums.CreditStatus;
 import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
 import ru.berezentseva.deal.DTO.StatementStatusHistoryDto;
-import ru.berezentseva.deal.exception.StatementException;
+import ru.berezentseva.deal.exception.DealException;
 import ru.berezentseva.deal.model.*;
 import ru.berezentseva.deal.repositories.*;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
@@ -106,10 +106,10 @@ public class DealService {
         }
     }
 
-    public void selectOffer(LoanOfferDto offerDto) throws StatementException {
+    public void selectOffer(LoanOfferDto offerDto) throws DealException {
         //проверка существования заявки с таким ID
         Statement statement = statementRepository.findStatementByStatementId(offerDto.getStatementId()).orElseThrow(()
-                -> new StatementException("Заявка с указанным ID не найдена: " + offerDto.getStatementId()));
+                -> new DealException("Заявка с указанным ID не найдена: " + offerDto.getStatementId()));
 
         log.info("Запрос по заявке: {}", offerDto.getStatementId().toString());
 
