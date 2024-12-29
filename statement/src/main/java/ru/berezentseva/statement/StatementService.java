@@ -90,9 +90,6 @@ public class StatementService {
                          log.error(errorMessage);
                 throw new RuntimeException(errorMessage);
             }
-//            List<LoanOfferDto> offers = Arrays.asList(Objects.requireNonNull(responseEntity.getBody()));
-//            responseEntity.getBody();
-            ;
 
         } catch (HttpClientErrorException e) {
             // Обработка ошибок клиента (4xx)

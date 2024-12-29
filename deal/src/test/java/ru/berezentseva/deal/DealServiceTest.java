@@ -41,14 +41,9 @@ class DealServiceTest {
     private ClientRepository clientRepository;
 
     @Mock
-    private StatementRepository statementRepository;
-
-    @Mock
     private CreditRepository creditRepository;
 
     private Client client;
-
-    private LoanStatementRequestDto request;
 
     @BeforeEach
     void setUp() {
@@ -105,7 +100,7 @@ class DealServiceTest {
     @Test
     // проверка возврата 4 предложений
     void testNewApplicationAndClientReturnsFourElementsSuccess() {
-        request = new LoanStatementRequestDto();
+        LoanStatementRequestDto request = new LoanStatementRequestDto();
         request.setFirstName("Evgeniya");
         request.setLastName("Berezentseva");
         request.setMiddleName("Vladimirovna");

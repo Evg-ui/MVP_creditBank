@@ -1,8 +1,5 @@
 package ru.berezentseva.statement;
 
-import liquibase.exception.LiquibaseException;
-import liquibase.integration.spring.SpringLiquibase;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,15 +34,10 @@ public class StatementServiceTest {
     @Mock
     private RestTemplate restTemplate;
 
-    private LoanStatementRequestDto request;
-
-
-
-
     @Test
         // проверка возврата 4 предложений
     void testreturnOffersAfterPrescoringReturnsFourElementsSuccess() throws ScoreException {
-        request = new LoanStatementRequestDto();
+        LoanStatementRequestDto request = new LoanStatementRequestDto();
         request.setFirstName("Evgeniya");
         request.setLastName("Berezentseva");
         request.setMiddleName("Vladimirovna");
