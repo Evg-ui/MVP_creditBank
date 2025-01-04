@@ -49,13 +49,6 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Зависимость для Hibernate Types (для поддержки jsonb) -->
-<!--        <dependency>-->
-<!--            <groupId>com.vladmihalcea</groupId>-->
-<!--            <artifactId>hibernate-types-60</artifactId>-->
-<!--            <version>2.21.1</version>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>io.hypersistence</groupId>
             <artifactId>hypersistence-utils-hibernate-63</artifactId>

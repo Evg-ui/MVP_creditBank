@@ -1,4 +1,4 @@
-package ru.berezentseva.deal;
+package ru.berezentseva.deal.configs;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;

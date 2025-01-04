@@ -41,7 +41,7 @@ public class StatementController {
     @PostMapping
     public ResponseEntity<?> returnOffersAfterPrescoring(@RequestBody LoanStatementRequestDto request) {
 
-            log.info("Received request into statementController: {}", request.toString());
+        log.info("Received request into statementController: {}", request.toString());
 
         try {
             List<LoanOfferDto> offers = statementService.returnOffersAfterPrescoring(request);

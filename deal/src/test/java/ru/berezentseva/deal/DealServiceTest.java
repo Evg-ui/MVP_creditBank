@@ -18,6 +18,7 @@ import ru.berezentseva.deal.model.Statement;
 import ru.berezentseva.deal.repositories.ClientRepository;
 import ru.berezentseva.deal.repositories.CreditRepository;
 import ru.berezentseva.deal.repositories.StatementRepository;
+import ru.berezentseva.deal.services.DealService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

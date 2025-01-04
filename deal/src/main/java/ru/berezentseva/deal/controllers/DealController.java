@@ -6,13 +6,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
-import ru.berezentseva.deal.DealService;
+import ru.berezentseva.deal.services.DealService;
 import ru.berezentseva.deal.exception.StatementException;
+import ru.berezentseva.dossier.DTO.EmailMessage;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,10 +27,13 @@ import java.util.UUID;
 public class DealController {
 
     private final DealService dealService;
+    private final KafkaTemplate<String, EmailMessage> kafkaTemplate;
 
     @Autowired
-    public DealController(DealService dealService)
-    {        this.dealService = dealService;    }
+    public DealController(DealService dealService, KafkaTemplate<String, EmailMessage> kafkaTemplate)
+    {        this.dealService = dealService;
+        this.kafkaTemplate = kafkaTemplate;
+    }
 
     @Operation(
             summary = "Расчёт возможных условий кредита. Request - LoanStatementRequestDto, response - List<LoanOfferDto>",
@@ -70,6 +75,7 @@ public class DealController {
             log.info("Ошибка получения данных о заявке!");
             throw e;
         }
+     //   kafkaTemplate.send("finish-registration", emailMessage);
     }
 
     @Operation(
@@ -90,6 +96,22 @@ public class DealController {
         log.error("Ошибка формирования кредита. {}", e.getMessage());
             throw e;
     }
+    }
+
+    //отправка через kafka
+    @PostMapping("/document/{statementId}/send")
+    public void sendDocuments(@PathVariable String statementId, @RequestBody EmailMessage emailMessage) {
+        kafkaTemplate.send("send-documents", emailMessage);
+    }
+
+    @PostMapping("/document/{statementId}/sign")
+    public void signDocuments(@PathVariable String statementId) {
+        // Логика для подписания документов
+    }
+
+    @PostMapping("/document/{statementId}/code")
+    public void codeDocuments(@PathVariable String statementId) {
+        // Логика для кодирования документов
     }
 
 }

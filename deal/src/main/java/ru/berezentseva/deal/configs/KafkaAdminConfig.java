@@ -1,4 +1,4 @@
-package ru.berezentseva.deal;
+package ru.berezentseva.deal.configs;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
