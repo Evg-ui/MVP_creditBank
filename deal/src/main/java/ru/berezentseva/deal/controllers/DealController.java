@@ -12,11 +12,18 @@ import org.springframework.web.client.RestClientException;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
+import ru.berezentseva.deal.model.Client;
+import ru.berezentseva.deal.model.Statement;
+import ru.berezentseva.deal.repositories.ClientRepository;
+import ru.berezentseva.deal.repositories.StatementRepository;
+import ru.berezentseva.deal.services.DealProducerService;
 import ru.berezentseva.deal.services.DealService;
 import ru.berezentseva.deal.exception.StatementException;
 import ru.berezentseva.dossier.DTO.EmailMessage;
+import ru.berezentseva.dossier.DTO.Enums.Theme;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Slf4j
@@ -28,11 +35,17 @@ public class DealController {
 
     private final DealService dealService;
     private final KafkaTemplate<String, EmailMessage> kafkaTemplate;
+    private final StatementRepository statementRepository;
+    private final ClientRepository clientRepository;
+    private final DealProducerService dealProducerService;
 
     @Autowired
-    public DealController(DealService dealService, KafkaTemplate<String, EmailMessage> kafkaTemplate)
+    public DealController(DealService dealService, KafkaTemplate<String, EmailMessage> kafkaTemplate, StatementRepository statementRepository, ClientRepository clientRepository, DealProducerService dealProducerService)
     {        this.dealService = dealService;
         this.kafkaTemplate = kafkaTemplate;
+        this.statementRepository = statementRepository;
+        this.clientRepository = clientRepository;
+        this.dealProducerService = dealProducerService;
     }
 
     @Operation(
@@ -68,14 +81,32 @@ public class DealController {
                     "Заявка сохраняется."
     )
     @PostMapping("/offer/select")
-    public void selectOffer(@RequestBody LoanOfferDto offerDto) throws StatementException {
+    public String selectOffer(@RequestBody LoanOfferDto offerDto) throws StatementException {
         try {
             dealService.selectOffer(offerDto);
         } catch (StatementException | IllegalArgumentException e) {
             log.info("Ошибка получения данных о заявке!");
             throw e;
         }
-     //   kafkaTemplate.send("finish-registration", emailMessage);
+
+        // готовимся к отправке через кафку и на почту клиенту
+        Statement statement = statementRepository.findStatementByStatementId(offerDto.getStatementId()).orElseThrow(()
+                -> new StatementException("Заявка с указанным ID не найдена: " + offerDto.getStatementId()));
+        Client client = statementRepository.findStatementByClientUuid(statement.getClientUuid()).orElseThrow(()
+                -> new NoSuchElementException("Клиент с указанным ID не найден: " + statement.getClientUuid())).getClientUuid();
+        log.info("Найден клиент с UUID: {}", client.getClientUuid());
+
+        EmailMessage emailMessage = new EmailMessage();
+        emailMessage.setAddress(client.getEmail());
+        emailMessage.setTheme(Theme.finishregistration);
+        emailMessage.setStatementId(statement.getStatementId());
+        emailMessage.setText("finishregistration: Завершить регистрацию!");
+        log.info("Отправка письма для {}, по заявке {}, с темой {} ", emailMessage.getAddress(),
+                emailMessage.getStatementId(), emailMessage.getTheme());
+        dealProducerService.sendEmailToDossier("finish-registration", emailMessage);
+        log.info("Сообщение к отправке: {}", emailMessage);
+        log.info("Отправка в Dossier завершена");
+        return "Success";
     }
 
     @Operation(
@@ -100,18 +131,23 @@ public class DealController {
 
     //отправка через kafka
     @PostMapping("/document/{statementId}/send")
-    public void sendDocuments(@PathVariable String statementId, @RequestBody EmailMessage emailMessage) {
+    public String sendDocuments(@PathVariable UUID statementId, @RequestBody EmailMessage emailMessage) {
         kafkaTemplate.send("send-documents", emailMessage);
+        return "Success";
     }
 
     @PostMapping("/document/{statementId}/sign")
-    public void signDocuments(@PathVariable String statementId) {
+    public String signDocuments(@PathVariable UUID statementId, @RequestBody EmailMessage emailMessage) {
         // Логика для подписания документов
+        kafkaTemplate.send("send-documents", emailMessage);
+        return "Success";
     }
 
     @PostMapping("/document/{statementId}/code")
-    public void codeDocuments(@PathVariable String statementId) {
+    public String codeDocuments(@PathVariable UUID statementId, @RequestBody EmailMessage emailMessage) {
         // Логика для кодирования документов
+        kafkaTemplate.send("send-documents", emailMessage);
+        return "Success";
     }
 
 }

@@ -14,21 +14,8 @@
     <name>calculator</name>
     <description>calculator</description>
     <url/>
-    <licenses>
-        <license/>
-    </licenses>
-    <developers>
-        <developer/>
-    </developers>
-    <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
-    </scm>
     <properties>
-        <maven.compiler.source>23</maven.compiler.source>
-        <maven.compiler.target>23</maven.compiler.target>
+        <java.version>23</java.version>
     </properties>
     <dependencies>
 <!--        <dependency>-->
@@ -53,24 +40,6 @@
             <version>2.0.2</version>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>io.springfox</groupId>-->
-<!--            <artifactId>springfox-boot-starter</artifactId>-->
-<!--            <version>3.0.0</version>-->
-<!--        </dependency>-->
-
-
-<!--        <dependency>-->
-<!--            <groupId>org.projectlombok</groupId>-->
-<!--            <artifactId>lombok</artifactId>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.jetbrains</groupId>-->
-<!--            <artifactId>annotations</artifactId>-->
-<!--            <version>RELEASE</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
@@ -81,7 +50,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -98,15 +66,9 @@
                 <configuration>
                     <source>23</source>
                     <target>23</target>
-                   <excludes>
-                       <exclude>
-                           <groupId>org.projectlombok</groupId>
-                           <artifactId>lombok</artifactId>
-                       </exclude>
-                   </excludes>
-               </configuration>
-           </plugin>
-       </plugins>
-   </build>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
