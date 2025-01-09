@@ -325,4 +325,6 @@ public class DealService {
         log.info("Кредит создан!");
         return credit;
     }
+
+
 }

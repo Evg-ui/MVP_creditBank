@@ -17,7 +17,7 @@ services:
     environment:
       KAFKA_BROKER_ID: 1   # уникальный идентификатор (ID) для брокера Kafka.
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181  # указывает, как Kafka должен подключаться к Zookeeper
-      KAFKA_ADVERTISED_LISTENERS: INSIDE://localhost:9092,OUTSIDE://localhost:9093 # определяет, как другие клиенты и брокеры должны подключаться к этому брокеру. В данном случае, брокер будет объявлять, что он доступен по адресу kafka (имя контейнера или хоста) на порту 9092
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://localhost:9092,OUTSIDE://localhost:9093 # определяет, как другие клиенты и брокеры должны подключаться к этому брокеру. В данном случае, брокер будет объявлять, что он доступен по адресу на порту 9092
       KAFKA_LISTENERS: INSIDE://0.0.0.0:9092,OUTSIDE://0.0.0.0:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT # задает карту протоколов безопасности для слушателей. В данном случае, она указывает, что для протокола PLAINTEXT используется также протокол PLAINTEXT. Это означает, что соединения не будут защищены.
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE #  указывает, какой слушатель (listener) будет использоваться для связи между брокерами в кластере. В данном случае, для межброкерских соединений будет использоваться слушатель с именем PLAINTEXT

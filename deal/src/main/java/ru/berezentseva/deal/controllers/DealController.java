@@ -81,32 +81,16 @@ public class DealController {
                     "Заявка сохраняется."
     )
     @PostMapping("/offer/select")
-    public String selectOffer(@RequestBody LoanOfferDto offerDto) throws StatementException {
+    public void selectOffer(@RequestBody LoanOfferDto offerDto) throws StatementException {
         try {
             dealService.selectOffer(offerDto);
         } catch (StatementException | IllegalArgumentException e) {
             log.info("Ошибка получения данных о заявке!");
             throw e;
         }
-
-        // готовимся к отправке через кафку и на почту клиенту
-        Statement statement = statementRepository.findStatementByStatementId(offerDto.getStatementId()).orElseThrow(()
-                -> new StatementException("Заявка с указанным ID не найдена: " + offerDto.getStatementId()));
-        Client client = statementRepository.findStatementByClientUuid(statement.getClientUuid()).orElseThrow(()
-                -> new NoSuchElementException("Клиент с указанным ID не найден: " + statement.getClientUuid())).getClientUuid();
-        log.info("Найден клиент с UUID: {}", client.getClientUuid());
-
-        EmailMessage emailMessage = new EmailMessage();
-        emailMessage.setAddress(client.getEmail());
-        emailMessage.setTheme(Theme.finishregistration);
-        emailMessage.setStatementId(statement.getStatementId());
-        emailMessage.setText("finishregistration: Завершить регистрацию!");
-        log.info("Отправка письма для {}, по заявке {}, с темой {} ", emailMessage.getAddress(),
-                emailMessage.getStatementId(), emailMessage.getTheme());
-        dealProducerService.sendEmailToDossier("finish-registration", emailMessage);
-        log.info("Сообщение к отправке: {}", emailMessage);
-        log.info("Отправка в Dossier завершена");
-        return "Success";
+        log.info("Отправка сообщения в Dossier для завершения регистрации.");
+        dealProducerService.sendToDossierWithKafka(offerDto);
+        log.info("Отправка в Dossier завершена!");
     }
 
     @Operation(
