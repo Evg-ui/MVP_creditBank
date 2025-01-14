@@ -12,7 +12,7 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class preScoringCheckClassTest {
+class preScoringCheckTest {
 
     @InjectMocks
     private CalculatorService calculatorService;
