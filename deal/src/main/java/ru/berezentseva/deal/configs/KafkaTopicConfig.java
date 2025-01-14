@@ -1,7 +1,9 @@
 package ru.berezentseva.deal.configs;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.hibernate.sql.exec.ExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -10,6 +12,7 @@ import org.springframework.kafka.core.KafkaAdmin;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Configuration
@@ -17,8 +20,9 @@ public class KafkaTopicConfig {
 
     @Autowired
     private KafkaAdmin kafkaAdmin;
+    @Autowired
+    private AdminClient adminClient;
 
-    // TODO сделать проверку существования топиков
     @Bean
     public CommandLineRunner createTopics() {
         return args ->
@@ -33,12 +37,19 @@ public class KafkaTopicConfig {
             );
 
             log.info("Создаются топики");
-            for (String topic : topics) {
-                NewTopic newTopic = new NewTopic(topic, 1, (short) 1);
-                kafkaAdmin.createOrModifyTopics(newTopic);
-                System.out.println("Created topic: " + topic);
-            }
-            log.info("Топики созданы!");
+            log.info("Проверка существования топиков...");
+
+                Set<String> existingTopics = adminClient.listTopics().names().get(); // Получаем список существующих топиков
+                for (String topic : topics) {
+                    if (!existingTopics.contains(topic)) { // Проверяем, существует ли топик
+                        NewTopic newTopic = new NewTopic(topic, 1, (short) 1);
+                        kafkaAdmin.createOrModifyTopics(newTopic);
+                        log.info("Создан топик: {}", topic);
+                    } else {
+                        log.info("Топик {} уже существует", topic);
+                    }
+                }
+                log.info("Проверка топиков завершена!");
         };
     }
 }
