@@ -36,7 +36,7 @@ public class StatementServiceTest {
 
     @Test
         // проверка возврата 4 предложений
-    void testreturnOffersAfterPrescoringReturnsFourElementsSuccess() throws ScoreException {
+    void testReturnOffersAfterPrescoringReturnsFourElementsSuccess() throws ScoreException {
         LoanStatementRequestDto request = new LoanStatementRequestDto();
         request.setFirstName("Evgeniya");
         request.setLastName("Berezentseva");

@@ -10,5 +10,4 @@
         <module>statement</module>
         <module>dossier</module>
     </modules>
-    <!--  Другие зависимости и плагины  -->
 </project>

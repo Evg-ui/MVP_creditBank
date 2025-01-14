@@ -11,7 +11,6 @@ import ru.berezentseva.calculator.CalculatorService;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.calculator.exception.ScoreException;
-import ru.berezentseva.statement.exception.StatementException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -74,7 +73,7 @@ public class StatementService {
 
     }
 
-    public void selectOfferFromDeal(LoanOfferDto offerDto) throws StatementException {
+    public void selectOfferFromDeal(LoanOfferDto offerDto){
         ResponseEntity<LoanOfferDto[]> responseEntity;
         try {
             responseEntity = restTemplate.exchange(
