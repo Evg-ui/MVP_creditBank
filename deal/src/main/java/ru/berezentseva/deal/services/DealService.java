@@ -114,7 +114,8 @@ public class DealService {
         log.info("Запрос по заявке: {}", offerDto.getStatementId().toString());
 
         log.info("Обновляем данные заявки");
-        statement.setStatus(ApplicationStatus.PREAPPROVAL);
+       // statement.setStatus(ApplicationStatus.APPROVED);
+        updateStatusFieldStatement(statement.getStatementId(),ApplicationStatus.APPROVED);
         statement.setAppliedOffer(offerDto);
         log.info("Данные заявки обновлены!");
 
@@ -122,10 +123,11 @@ public class DealService {
         updateStatusHistoryFieldStatement(statement, ChangeType.AUTOMATIC);
     }
 
-    public void finishRegistration(UUID statementId, FinishRegistrationRequestDto request) {
+    // завершение регистрации и формирование кредита с выбранными условиями
+    public void finishRegistration(UUID statementId, FinishRegistrationRequestDto request) throws StatementException {
         Statement statement= statementRepository.findStatementByStatementId(statementId).orElseThrow(()
                 -> new NoSuchElementException("Заявка с указанным ID не найдена: " + statementId));
-        log.info("Запрос по заявке: {}", statementId.toString());
+        log.info("Запрос по заявке: {}", statementId);
 
         Client client = statementRepository.findStatementByClientUuid(statement.getClientUuid()).orElseThrow(()
                 -> new NoSuchElementException("Клиент с указанным ID не найден: " + statement.getClientUuid())).getClientUuid();
@@ -181,12 +183,20 @@ public class DealService {
         log.info("Полученный кредит из calc: {}", creditDto);
         Credit credit = createCredit(creditDto);
         
-        statement.setStatus(ApplicationStatus.APPROVED);
+       // statement.setStatus(ApplicationStatus.CC_APPROVED);
+        updateStatusFieldStatement(statement.getStatementId(),ApplicationStatus.CC_APPROVED);
         statement.setCreditUuid(credit);
 
         log.info("Обновляем историю заявки");
         updateStatusHistoryFieldStatement(statement, ChangeType.AUTOMATIC);
     }
+
+    public void updateStatusFieldStatement(UUID statementId, ApplicationStatus applicationStatus) throws StatementException {
+        Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
+                -> new StatementException("Заявка с указанным ID не найдена: " + statementId));
+        statement.setStatus(applicationStatus);
+        updateStatusHistoryFieldStatement(statement, ChangeType.AUTOMATIC)
+;    }
 
     private void updateStatusHistoryFieldStatement(Statement statement, ChangeType changeType) {
         List<StatementStatusHistoryDto> status;
@@ -325,6 +335,4 @@ public class DealService {
         log.info("Кредит создан!");
         return credit;
     }
-
-
 }

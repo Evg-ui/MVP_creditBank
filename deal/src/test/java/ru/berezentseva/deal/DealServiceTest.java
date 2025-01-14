@@ -100,7 +100,7 @@ class DealServiceTest {
         dealService.selectOffer(offerDto);
 
         // Проверка
-        assertEquals(ApplicationStatus.PREAPPROVAL, statement.getStatus());
+        assertEquals(ApplicationStatus.APPROVED, statement.getStatus());
     }
 
     @Test

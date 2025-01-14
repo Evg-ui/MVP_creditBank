@@ -6,24 +6,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
+import ru.berezentseva.deal.DTO.Enums.ApplicationStatus;
 import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
-import ru.berezentseva.deal.model.Client;
-import ru.berezentseva.deal.model.Statement;
-import ru.berezentseva.deal.repositories.ClientRepository;
-import ru.berezentseva.deal.repositories.StatementRepository;
 import ru.berezentseva.deal.services.DealProducerService;
 import ru.berezentseva.deal.services.DealService;
 import ru.berezentseva.deal.exception.StatementException;
-import ru.berezentseva.dossier.DTO.EmailMessage;
-import ru.berezentseva.dossier.DTO.Enums.Theme;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Slf4j
@@ -34,17 +27,11 @@ import java.util.UUID;
 public class DealController {
 
     private final DealService dealService;
-    private final KafkaTemplate<String, EmailMessage> kafkaTemplate;
-    private final StatementRepository statementRepository;
-    private final ClientRepository clientRepository;
     private final DealProducerService dealProducerService;
 
     @Autowired
-    public DealController(DealService dealService, KafkaTemplate<String, EmailMessage> kafkaTemplate, StatementRepository statementRepository, ClientRepository clientRepository, DealProducerService dealProducerService)
-    {        this.dealService = dealService;
-        this.kafkaTemplate = kafkaTemplate;
-        this.statementRepository = statementRepository;
-        this.clientRepository = clientRepository;
+    public DealController(DealService dealService, DealProducerService dealProducerService)
+    {   this.dealService = dealService;
         this.dealProducerService = dealProducerService;
     }
 
@@ -58,7 +45,7 @@ public class DealController {
 
     // расчёт возможных условий кредита. Request - LoanStatementRequestDto, response - List<LoanOfferDto>
     @PostMapping("/statement")
-    public ResponseEntity<?>  calculateLoan(@RequestBody LoanStatementRequestDto request) {
+    public ResponseEntity<?>  calculateLoanFourOffers(@RequestBody LoanStatementRequestDto request) {
         log.info("Received request into dealController: {}", request.toString());
              try {
         log.info("Creating client and statement");
@@ -72,6 +59,7 @@ public class DealController {
                     .body(e.getMessage());
         }
     }
+
     @Operation(
             summary = "Выбор одного из предложений. Request - LoanOfferDto, response - void + сохранение данных в БД",
             description = "На основании пришедших по LoanOfferDto "+
@@ -82,15 +70,19 @@ public class DealController {
     )
     @PostMapping("/offer/select")
     public void selectOffer(@RequestBody LoanOfferDto offerDto) throws StatementException {
+        UUID statementId;
         try {
+            // получаем UUID заявки
+            statementId = offerDto.getStatementId();
             dealService.selectOffer(offerDto);
+            log.info("Отправка сообщения в Dossier для завершения регистрации.");
+            dealProducerService.sendToDossierWithKafka(statementId, "finish-registration");
+            log.info("Отправка в Dossier для завершения регистрации завершена!");
         } catch (StatementException | IllegalArgumentException e) {
             log.info("Ошибка получения данных о заявке!");
             throw e;
         }
-        log.info("Отправка сообщения в Dossier для завершения регистрации.");
-        dealProducerService.sendToDossierWithKafka(offerDto);
-        log.info("Отправка в Dossier завершена!");
+
     }
 
     @Operation(
@@ -103,35 +95,70 @@ public class DealController {
             
     )
     @PostMapping("/calculate/{statementId}")
-    public void calculate(@PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) {
+    public void calculateCredit(@PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) throws StatementException {
         try {
             log.info("Received request into dealController: {} with statementId {} ", request.toString(), statementId);
             dealService.finishRegistration(statementId, request);
+
+            log.info("Отправка сообщения в Dossier для получения документов от клиента.");
+            dealProducerService.sendToDossierWithKafka(statementId, "create-documents");
+            log.info("Отправка в Dossier для получения документов от клиента завершена!");
         }  catch (RestClientException | IllegalArgumentException e) {
         log.error("Ошибка формирования кредита. {}", e.getMessage());
             throw e;
     }
     }
 
+    @Operation(
+            summary = "Запрос на отправку документов клиентом",
+            description = "На основании заявки на кредит statementId "
+    )
     //отправка через kafka
     @PostMapping("/document/{statementId}/send")
-    public String sendDocuments(@PathVariable UUID statementId, @RequestBody EmailMessage emailMessage) {
-        kafkaTemplate.send("send-documents", emailMessage);
-        return "Success";
+    public void sendDocuments(@PathVariable UUID statementId) throws StatementException {
+        try {
+            // обновить статус заявки на prepare docs
+            dealService.updateStatusFieldStatement(statementId, ApplicationStatus.PREPARE_DOCUMENTS);
+            dealProducerService.sendToDossierWithKafka(statementId, "send-documents");
+            // затем обновить статус заявки на create docs
+            dealService.updateStatusFieldStatement(statementId, ApplicationStatus.DOCUMENT_CREATED);
+        } catch (RestClientException | IllegalArgumentException e) {
+            log.error("Ошибка отправления запроса на отправку документов в Dossier. {}", e.getMessage());
+            throw e;
+    }
     }
 
+    @Operation(
+            summary = "Запрос на отправку документов клиентом",
+            description = "На основании заявки на кредит statementId "
+    )
     @PostMapping("/document/{statementId}/sign")
-    public String signDocuments(@PathVariable UUID statementId, @RequestBody EmailMessage emailMessage) {
-        // Логика для подписания документов
-        kafkaTemplate.send("send-documents", emailMessage);
-        return "Success";
+    public void signDocuments(@PathVariable UUID statementId) throws StatementException {
+        try {
+            // обновить поле заявки ses code - где и как
+        dealProducerService.sendToDossierWithKafka(statementId, "send-ses");  // какой тут топик?
+        } catch (RestClientException | IllegalArgumentException e) {
+            log.error("Ошибка отправления запроса с кодом в Dossier. {}", e.getMessage());
+            throw e;
+        }
     }
 
+    @Operation(
+            summary = "Запрос на отправку документов клиентом",
+            description = "На основании заявки на кредит statementId "
+    )
     @PostMapping("/document/{statementId}/code")
-    public String codeDocuments(@PathVariable UUID statementId, @RequestBody EmailMessage emailMessage) {
-        // Логика для кодирования документов
-        kafkaTemplate.send("send-documents", emailMessage);
-        return "Success";
+    public void codeDocuments(@PathVariable UUID statementId)  throws StatementException {
+        try {
+            // обновить статус заявки на docs signed
+            dealService.updateStatusFieldStatement(statementId, ApplicationStatus.DOCUMENT_SIGNED);
+            // обновить статус заявки на credit issued
+            dealService.updateStatusFieldStatement(statementId, ApplicationStatus.CREDIT_ISSUED);
+            dealProducerService.sendToDossierWithKafka(statementId, "credit-issued");
+        } catch (RestClientException | IllegalArgumentException e) {
+            log.error("Ошибка отправления запроса на получение документов в Dossier. {}", e.getMessage());
+            throw e;
+        }
     }
 
 }

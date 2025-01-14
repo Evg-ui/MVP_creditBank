@@ -18,9 +18,11 @@ public class KafkaTopicConfig {
     @Autowired
     private KafkaAdmin kafkaAdmin;
 
+    // TODO сделать проверку существования топиков
     @Bean
     public CommandLineRunner createTopics() {
-        return args -> {
+        return args ->
+        {
             List<String> topics = Arrays.asList(
                     "finish-registration",
                     "create-documents",

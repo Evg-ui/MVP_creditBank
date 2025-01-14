@@ -49,8 +49,7 @@ public class StatementController {
         } catch (ScoreException | RestClientException | IllegalArgumentException e) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+                    .body(e.getMessage());}
     }
 
     @Operation(
