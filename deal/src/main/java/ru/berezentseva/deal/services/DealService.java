@@ -21,6 +21,7 @@ import ru.berezentseva.deal.model.*;
 import ru.berezentseva.deal.repositories.*;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
 
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -195,8 +196,26 @@ public class DealService {
         Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
                 -> new StatementException("Заявка с указанным ID не найдена: " + statementId));
         statement.setStatus(applicationStatus);
-        updateStatusHistoryFieldStatement(statement, ChangeType.AUTOMATIC)
-;    }
+        updateStatusHistoryFieldStatement(statement, ChangeType.AUTOMATIC);
+        statementRepository.save(statement);
+    }
+
+    public void updateSesCodeFieldStatement(UUID statementId) throws StatementException {
+        Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
+                -> new StatementException("Заявка с указанным ID не найдена: " + statementId));
+        statement.setSesCode(UUID.randomUUID().toString());  // далее обновлять полученным через gateway кодом
+        statementRepository.save(statement);
+    }
+
+    public void updateCreditStatusFieldCredit(UUID statementId, CreditStatus creditStatus) throws StatementException {
+        Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
+                -> new StatementException("Заявка с указанным ID не найдена: " + statementId));
+        UUID creditId = statement.getCreditUuid().getCreditUuid();
+        Credit credit = creditRepository.findCreditByCreditUuid(creditId).orElseThrow(()
+                -> new StatementException("Кредит с указанным ID не найден: " + creditId));
+        credit.setCreditStatus(creditStatus);
+        creditRepository.save(credit);
+    }
 
     private void updateStatusHistoryFieldStatement(Statement statement, ChangeType changeType) {
         List<StatementStatusHistoryDto> status;
@@ -208,6 +227,7 @@ public class DealService {
         statusHistory.setTime(new Timestamp(System.currentTimeMillis()).toLocalDateTime()); // Устанавливаем текущее время
         statusHistory.setChangeType(changeType);
         log.info("Текущий статус заявки: {}", statusHistory);
+        log.info("Поиск дубля updateStatusHistoryFieldStatement");
         status.add(statusHistory);
         statement.setStatusHistory(status);
         log.info("История заявки: {}", statement.getStatusHistory().toString());
@@ -322,11 +342,13 @@ public class DealService {
     private Credit createCredit(CreditDto creditDto) {
         Credit credit = new Credit();
         log.info("UUID кредита {}", credit.getCreditUuid());
-        credit.setAmount(creditDto.getAmount());
+        credit.setAmount(creditDto.getAmount().setScale(4, RoundingMode.HALF_UP));
         credit.setTerm(creditDto.getTerm());
-        credit.setMonthlyPayment(creditDto.getMonthlyPayment());
-        credit.setRate(creditDto.getRate());
-        credit.setPsk(creditDto.getPsk());
+        credit.setMonthlyPayment(creditDto.getMonthlyPayment().setScale(4, RoundingMode.HALF_UP));
+        credit.setRate(creditDto.getRate().setScale(4, RoundingMode.HALF_UP));
+        credit.setPsk(creditDto.getPsk().setScale(4, RoundingMode.HALF_UP));
+        log.info("Сохраняем кредит с параметрами: amount={}, term={}, monthlyPayment={}, rate={}, psk={}",
+                credit.getAmount(), credit.getTerm(), credit.getMonthlyPayment(), credit.getRate(), credit.getPsk());
         credit.setPayment_schedule(creditDto.getPaymentSchedule());
         credit.setSalaryClient(creditDto.getIsSalaryClient());
         credit.setInsuranceEnabled(creditDto.getIsInsuranceEnabled());

@@ -68,7 +68,7 @@ public class DealProducerService {
                 messageText = "Отправка документов клиентом";
                 break;
             case "send-ses":
-                messageText = "Подписать документы и завалидировать код";
+                messageText = "Подписать документы и завалидировать код.";
                 break;
             case "credit-issued":
                 messageText = "Кредит выдан";

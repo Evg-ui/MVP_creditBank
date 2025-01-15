@@ -24,7 +24,7 @@
             <column name="monthly_payment" type="decimal(19, 4)">
                 <constraints nullable="false"/>
             </column>
-            <column name="rate" type="decimal(5, 4)">
+            <column name="rate" type="decimal(10, 4)">
                 <constraints nullable="false"/>
             </column>
             <column name="psk" type="decimal(19, 4)">
