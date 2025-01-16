@@ -1,0 +1,20 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="alter-table-credit" author="Evgeniya Berezentseva">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="credit" columnName="rate"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.columns
+                WHERE table_name = 'credit' AND column_name = 'rate'
+                  AND data_type = 'numeric' AND numeric_precision = 10 AND numeric_scale = 4;
+            </sqlCheck>
+        </preConditions>
+        <modifyDataType
+                tableName="credit" columnName="rate" newDataType="numeric(10, 4)"
+        />
+    </changeSet>
+</databaseChangeLog>
