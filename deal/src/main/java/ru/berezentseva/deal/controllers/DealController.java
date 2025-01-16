@@ -83,7 +83,6 @@ public class DealController {
             log.info("Ошибка получения данных о заявке!");
             throw e;
         }
-
     }
 
     @Operation(
@@ -95,17 +94,21 @@ public class DealController {
                     "связывается с заявкой и сохраняется в БД, история заявки наполняется новыми этапом"
             
     )
+
+    // TODO вынести в текст письма ошибку скоринга
     @PostMapping("/calculate/{statementId}")
     public void calculateCredit(@PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) throws StatementException {
         try {
             log.info("Received request into dealController: {} with statementId {} ", request.toString(), statementId);
             dealService.finishRegistration(statementId, request);
-
             log.info("Отправка сообщения в Dossier для получения документов от клиента.");
             dealProducerService.sendToDossierWithKafka(statementId, "create-documents");
             log.info("Отправка в Dossier для получения документов от клиента завершена!");
         }  catch (RestClientException | IllegalArgumentException e) {
         log.error("Ошибка формирования кредита. {}", e.getMessage());
+            log.info("Отправка сообщения в Dossier по отказанной заявке.");
+            dealProducerService.sendToDossierWithKafka(statementId, "statement-denied");
+            dealService.updateStatusFieldStatement(statementId, ApplicationStatus.CC_DENIED);
             throw e;
     }
     }
@@ -129,7 +132,6 @@ public class DealController {
     }
     }
 
-    // todo обновить поле sign date в заявке
     @Operation(
             summary = "Запрос на отправку документов клиентом",
             description = "На основании заявки на кредит statementId "
@@ -138,7 +140,7 @@ public class DealController {
     public void signDocuments(@PathVariable UUID statementId) throws StatementException {
         try {
             // обновить поле заявки ses code - где и как
-        dealProducerService.sendToDossierWithKafka(statementId, "send-ses");  // TODO какой тут топик?
+        dealProducerService.sendToDossierWithKafka(statementId, "send-ses");
          dealService.updateSesCodeFieldStatement(statementId);
         } catch (RestClientException | IllegalArgumentException e) {
             log.error("Ошибка отправления запроса с ses кодом в Dossier. {}", e.getMessage());
@@ -157,6 +159,8 @@ public class DealController {
             dealService.updateStatusFieldStatement(statementId, ApplicationStatus.DOCUMENT_SIGNED);
             // обновить статус заявки на credit issued
             dealService.updateStatusFieldStatement(statementId, ApplicationStatus.CREDIT_ISSUED);
+            // обновить дату подписания заявки
+            dealService.updateSignDateFieldStatement(statementId);
             dealProducerService.sendToDossierWithKafka(statementId, "credit-issued");
             dealService.updateCreditStatusFieldCredit(statementId, CreditStatus.ISSUED);
         } catch (RestClientException | IllegalArgumentException e) {

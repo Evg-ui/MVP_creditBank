@@ -23,6 +23,7 @@ import ru.berezentseva.calculator.DTO.LoanOfferDto;
 
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -204,6 +205,13 @@ public class DealService {
         Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
                 -> new StatementException("Заявка с указанным ID не найдена: " + statementId));
         statement.setSesCode(UUID.randomUUID().toString());  // далее обновлять полученным через gateway кодом
+        statementRepository.save(statement);
+    }
+
+    public void updateSignDateFieldStatement(UUID statementId) throws StatementException {
+        Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
+                -> new StatementException("Заявка с указанным ID не найдена: " + statementId));
+        statement.setSignDate(Timestamp.valueOf(LocalDateTime.now()));
         statementRepository.save(statement);
     }
 

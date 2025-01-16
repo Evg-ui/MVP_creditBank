@@ -52,29 +52,28 @@ public class DealProducerService {
         log.info("Отправка в Dossier завершена");
     }
 
-    // возможно, это надо вынести в отдельный класс и возвращать массив
     // определяем текст для отправки сообщения
     public String changeMessageText(String topicTheme) {
         String messageText;
 
         switch (topicTheme) {
             case "finish-registration":
-                messageText = "Завершите регистрацию!";
+                messageText = "Ваша заявка предварительно одобрена, завершите оформление";
                 break;
             case "create-documents":
-                messageText = "Перейти к оформлению документов";
+                messageText = "Перейти к оформлению документов. Сформировать документы.";
                 break;
             case "send-documents":
                 messageText = "Отправка документов клиентом";
                 break;
             case "send-ses":
-                messageText = "Подписать документы и завалидировать код.";
+                messageText = "Сформировать документы и завалидировать код.";
                 break;
             case "credit-issued":
                 messageText = "Кредит выдан";
                 break;
             case "statement-denied":
-                messageText = "Заявка отклонена";
+                messageText = "Ваша заявка отклонена.";
                 break;
             default:
                 messageText = "Некорректный топик";
