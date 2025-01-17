@@ -115,7 +115,6 @@ public class DealService {
         log.info("Запрос по заявке: {}", offerDto.getStatementId().toString());
 
         log.info("Обновляем данные заявки");
-       // statement.setStatus(ApplicationStatus.APPROVED);
         updateStatusFieldStatement(statement.getStatementId(),ApplicationStatus.APPROVED);
         statement.setAppliedOffer(offerDto);
         log.info("Данные заявки обновлены!");
@@ -305,6 +304,7 @@ public class DealService {
         log.info("ClientId {}", statement.getClientUuid().toString());
         statement.setCreationDate(Timestamp.valueOf(LocalDateTime.now()));
         log.info("Creation_date {}", statement.getCreationDate().toString());
+        statement.setStatus(ApplicationStatus.PREAPPROVAL);
         log.info("Сохраняем заявку");
         saveStatement(statement);
         log.info("Заявка создана");

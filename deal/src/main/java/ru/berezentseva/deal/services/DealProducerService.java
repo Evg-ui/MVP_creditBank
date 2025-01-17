@@ -32,7 +32,7 @@ public class DealProducerService {
         log.info("Отправка запроса в Dossier завершена! Топик: {}", topicForSend);
     }
 
-    public void sendToDossierWithKafka(UUID statementId, String topicTheme) throws StatementException {
+    public void sendToDossierWithKafka(UUID statementId, String topicTheme, String errorMessageText) throws StatementException {
         // готовимся к отправке через кафку и на почту клиенту
         Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
                 -> new StatementException("Заявка с указанным ID не найдена: " + statementId));
@@ -44,7 +44,8 @@ public class DealProducerService {
         emailMessage.setAddress(client.getEmail());
         emailMessage.setTheme(changeMailTheme(topicTheme));
         emailMessage.setStatementId(statement.getStatementId());
-        emailMessage.setText(changeMessageText(topicTheme));
+        emailMessage.setText(changeMessageText(topicTheme) + " " +
+                " " + errorMessageText);
         log.info("Отправка письма для {}, по заявке {}, с темой {} ", emailMessage.getAddress(),
                 emailMessage.getStatementId(), emailMessage.getTheme());
         sendEmailToDossier(topicTheme, emailMessage);
