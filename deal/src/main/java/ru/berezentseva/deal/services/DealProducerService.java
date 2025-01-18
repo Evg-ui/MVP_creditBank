@@ -32,7 +32,7 @@ public class DealProducerService {
         log.info("Отправка запроса в Dossier завершена! Топик: {}", topicForSend);
     }
 
-    public void sendToDossierWithKafka(UUID statementId, String topicTheme) throws StatementException {
+    public void sendToDossierWithKafka(UUID statementId, String topicTheme, String errorMessageText) throws StatementException {
         // готовимся к отправке через кафку и на почту клиенту
         Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
                 -> new StatementException("Заявка с указанным ID не найдена: " + statementId));
@@ -44,7 +44,8 @@ public class DealProducerService {
         emailMessage.setAddress(client.getEmail());
         emailMessage.setTheme(changeMailTheme(topicTheme));
         emailMessage.setStatementId(statement.getStatementId());
-        emailMessage.setText(changeMessageText(topicTheme));
+        emailMessage.setText(changeMessageText(topicTheme) + " " +
+                " " + errorMessageText);
         log.info("Отправка письма для {}, по заявке {}, с темой {} ", emailMessage.getAddress(),
                 emailMessage.getStatementId(), emailMessage.getTheme());
         sendEmailToDossier(topicTheme, emailMessage);
@@ -52,29 +53,28 @@ public class DealProducerService {
         log.info("Отправка в Dossier завершена");
     }
 
-    // возможно, это надо вынести в отдельный класс и возвращать массив
     // определяем текст для отправки сообщения
     public String changeMessageText(String topicTheme) {
         String messageText;
 
         switch (topicTheme) {
             case "finish-registration":
-                messageText = "Завершите регистрацию!";
+                messageText = "Ваша заявка предварительно одобрена, завершите оформление";
                 break;
             case "create-documents":
-                messageText = "Перейти к оформлению документов";
+                messageText = "Перейти к оформлению документов. Сформировать документы.";
                 break;
             case "send-documents":
                 messageText = "Отправка документов клиентом";
                 break;
             case "send-ses":
-                messageText = "Подписать документы и завалидировать код.";
+                messageText = "Сформировать документы и завалидировать код.";
                 break;
             case "credit-issued":
                 messageText = "Кредит выдан";
                 break;
             case "statement-denied":
-                messageText = "Заявка отклонена";
+                messageText = "Ваша заявка отклонена.";
                 break;
             default:
                 messageText = "Некорректный топик";

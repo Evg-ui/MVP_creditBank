@@ -145,8 +145,6 @@ public class CalculatorService {
             System.out.println(creditDto);
         } catch (ScoreException e)
         {
-           // log.info("Скоринг не рассчитан. Расчет кредита невозможен!");
-             //   throw new ScoreException("The scoring was disrupted. Credit's calculation is impossible!");
             throw e;
         }
         return creditDto;

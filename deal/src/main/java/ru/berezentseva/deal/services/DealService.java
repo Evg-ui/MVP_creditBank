@@ -115,7 +115,6 @@ public class DealService {
         log.info("Запрос по заявке: {}", offerDto.getStatementId().toString());
 
         log.info("Обновляем данные заявки");
-       // statement.setStatus(ApplicationStatus.APPROVED);
         updateStatusFieldStatement(statement.getStatementId(),ApplicationStatus.APPROVED);
         statement.setAppliedOffer(offerDto);
         log.info("Данные заявки обновлены!");
@@ -204,6 +203,13 @@ public class DealService {
         Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
                 -> new StatementException("Заявка с указанным ID не найдена: " + statementId));
         statement.setSesCode(UUID.randomUUID().toString());  // далее обновлять полученным через gateway кодом
+        statementRepository.save(statement);
+    }
+
+    public void updateSignDateFieldStatement(UUID statementId) throws StatementException {
+        Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
+                -> new StatementException("Заявка с указанным ID не найдена: " + statementId));
+        statement.setSignDate(Timestamp.valueOf(LocalDateTime.now()));
         statementRepository.save(statement);
     }
 
@@ -298,6 +304,7 @@ public class DealService {
         log.info("ClientId {}", statement.getClientUuid().toString());
         statement.setCreationDate(Timestamp.valueOf(LocalDateTime.now()));
         log.info("Creation_date {}", statement.getCreationDate().toString());
+        statement.setStatus(ApplicationStatus.PREAPPROVAL);
         log.info("Сохраняем заявку");
         saveStatement(statement);
         log.info("Заявка создана");
