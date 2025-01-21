@@ -168,11 +168,11 @@ public class DealService {
             }
         } catch (HttpClientErrorException e) {
             // Обработка ошибок клиента (4xx)
-            log.error("Ошибка клиента при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
+            log.error("Ошибка 4xx клиента при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
             throw e;
         } catch (HttpServerErrorException e) {
             // Обработка ошибок сервера (5xx)
-            log.error("Ошибка сервера при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
+            log.error("Ошибка 5xx сервера при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
             throw e;
         } catch (RestClientException e) {
             //Обработка общих ошибок Rest клиента
@@ -364,4 +364,5 @@ public class DealService {
         log.info("Кредит создан!");
         return credit;
     }
+
 }

@@ -9,6 +9,7 @@
         <module>deal</module>
         <module>statement</module>
         <module>dossier</module>
+        <module>gateway</module>
     </modules>
     <!--  Другие зависимости и плагины  -->
 </project>

@@ -1,6 +1,8 @@
 package ru.berezentseva.deal.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.servers.Server;
+import io.swagger.v3.oas.annotations.servers.Servers;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,8 @@ import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.deal.DTO.Enums.ApplicationStatus;
 import ru.berezentseva.deal.DTO.Enums.CreditStatus;
 import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
+import ru.berezentseva.deal.RestClient;
+import ru.berezentseva.deal.model.Statement;
 import ru.berezentseva.deal.services.DealProducerService;
 import ru.berezentseva.deal.services.DealService;
 import ru.berezentseva.deal.exception.StatementException;
@@ -29,11 +33,13 @@ public class DealController {
 
     private final DealService dealService;
     private final DealProducerService dealProducerService;
+    private final RestClient restClient;
 
     @Autowired
-    public DealController(DealService dealService, DealProducerService dealProducerService)
+    public DealController(DealService dealService, DealProducerService dealProducerService, RestClient restClient)
     {   this.dealService = dealService;
         this.dealProducerService = dealProducerService;
+        this.restClient = restClient;
     }
 
     @Operation(
@@ -95,7 +101,6 @@ public class DealController {
             
     )
 
-    // TODO вынести в текст письма ошибку скоринга
     @PostMapping("/calculate/{statementId}")
     public void calculateCredit(@PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) throws StatementException {
         try {
@@ -113,6 +118,8 @@ public class DealController {
             throw e;
     }
     }
+
+    // АПИ для работы с Kafka
 // todo добавить описание полей, которые обновятся
     @Operation(
             summary = "Запрос на отправку документов клиентом",
@@ -132,7 +139,7 @@ public class DealController {
             throw e;
     }
     }
-
+// todo исправить описание апи
     @Operation(
             summary = "Запрос на отправку документов клиентом",
             description = "На основании заявки на кредит statementId "
@@ -149,11 +156,12 @@ public class DealController {
         }
     }
 
+    // todo исправить описание апи
     @Operation(
             summary = "Запрос на отправку документов клиентом",
             description = "На основании заявки на кредит statementId "
     )
-    @PostMapping("/document/{statementId}/code")
+        @PostMapping("/document/{statementId}/code")
     public void codeDocuments(@PathVariable UUID statementId)  throws StatementException {
         try {
             // обновить статус заявки на docs signed
@@ -169,5 +177,17 @@ public class DealController {
             throw e;
         }
     }
+
+    // админские АПИ
+    @GetMapping("/admin/statement/{statementId}")
+    public Statement getStatementById(@PathVariable UUID statementId) {
+        return restClient.getStatementById(statementId);
+    }
+
+    @GetMapping("/admin/statement")
+    public List<Statement> getAllStatements() {
+        return restClient.getAllStatements();
+    }
+
 
 }

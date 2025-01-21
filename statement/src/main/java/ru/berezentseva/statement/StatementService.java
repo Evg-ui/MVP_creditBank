@@ -1,6 +1,7 @@
 package ru.berezentseva.statement;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -19,13 +20,13 @@ import java.util.Objects;
 
 @Slf4j
 @Service
+@ComponentScan(basePackages = {"ru.berezentseva.statement", "ru.berezentseva.deal"})
 public class StatementService {
     private final RestTemplate restTemplate;
 
     public StatementService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
-
 
     public List<LoanOfferDto> returnOffersAfterPrescoring(LoanStatementRequestDto request) throws ScoreException {
 
