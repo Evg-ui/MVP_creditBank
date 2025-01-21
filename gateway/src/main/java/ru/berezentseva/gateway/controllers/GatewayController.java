@@ -1,7 +1,6 @@
 package ru.berezentseva.gateway.controllers;
 
 
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.ComponentScan;
@@ -13,12 +12,9 @@ import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.calculator.exception.ScoreException;
 import ru.berezentseva.deal.RestClient;
-import ru.berezentseva.deal.model.Statement;
 import ru.berezentseva.gateway.GatewayService;
-import ru.berezentseva.statement.StatementService;
 
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @RestController
