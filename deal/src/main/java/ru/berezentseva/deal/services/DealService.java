@@ -29,6 +29,7 @@ import java.util.*;
 
 @Service
 @Slf4j
+//@ComponentScan(basePackages = {"ru.berezentseva.deal", "ru.berezentseva.sharedConfigs"})
 public class DealService {
     private final RestTemplate restTemplate;
 
@@ -363,6 +364,14 @@ public class DealService {
         saveCredit(credit);
         log.info("Кредит создан!");
         return credit;
+    }
+
+    public Statement getStatementById(UUID statementId) {
+            return statementRepository.findById(statementId).orElseThrow();
+    }
+
+    public List<Statement> getAllStatements() {
+      return statementRepository.findAll();
     }
 
 }

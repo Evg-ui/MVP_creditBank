@@ -178,8 +178,9 @@ public class DealController {
 
     // админские АПИ
     @GetMapping("/admin/statement/{statementId}")
-    public Statement getStatementById(@PathVariable UUID statementId) {
-        return restClient.getStatementById(statementId);
+    public ResponseEntity<Statement> getStatementById(@PathVariable UUID statementId) {
+        Statement statement = dealService.getStatementById(statementId);
+        return ResponseEntity.ok(statement);
     }
 
     @GetMapping("/admin/statement")

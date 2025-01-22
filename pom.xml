@@ -10,6 +10,8 @@
         <module>statement</module>
         <module>dossier</module>
         <module>gateway</module>
+        <module>sharedConfigs</module>
+
     </modules>
     <!--  Другие зависимости и плагины  -->
 </project>

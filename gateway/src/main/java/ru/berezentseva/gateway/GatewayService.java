@@ -1,7 +1,6 @@
 package ru.berezentseva.gateway;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -22,7 +21,7 @@ import java.util.Objects;
 
 @Slf4j
 @Service
-@ComponentScan(basePackages = {"ru.berezentseva.gateway", "ru.berezentseva.deal"})
+//@ComponentScan(basePackages = {"ru.berezentseva.gateway", "ru.berezentseva.deal"})
 public class GatewayService {
 
     private final RestTemplate restTemplate;

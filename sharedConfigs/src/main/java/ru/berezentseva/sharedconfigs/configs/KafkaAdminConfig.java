@@ -1,4 +1,4 @@
-package ru.berezentseva.deal.configs;
+package ru.berezentseva.sharedconfigs.configs;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;

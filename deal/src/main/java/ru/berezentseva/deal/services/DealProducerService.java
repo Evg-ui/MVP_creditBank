@@ -16,6 +16,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
+//@ComponentScan(basePackages = {"ru.berezentseva.deal", "ru.berezentseva.sharedConfigs"})
 public class DealProducerService {
     private final KafkaTemplate<String, EmailMessage> kafkaTemplate;
 

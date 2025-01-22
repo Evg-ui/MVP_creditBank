@@ -12,6 +12,7 @@
         <module name="calculator" />
         <module name="deal" />
         <module name="gateway" />
+        <module name="sharedConfigs" />
       </profile>
     </annotationProcessing>
   </component>
@@ -21,6 +22,7 @@
       <module name="deal" options="-parameters" />
       <module name="dossier" options="-parameters" />
       <module name="gateway" options="-parameters" />
+      <module name="sharedConfigs" options="-parameters" />
       <module name="statement" options="-parameters" />
     </option>
   </component>
