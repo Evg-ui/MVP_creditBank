@@ -60,21 +60,21 @@ public class DealProducerService {
 
         switch (topicTheme) {
             case "finish-registration":
-                messageText = "Ваша заявка предварительно одобрена, завершите оформление";
+                messageText = "Ваша заявка предварительно одобрена, завершите оформление.";
                 break;
             case "create-documents":
-                messageText = "Перейти к оформлению документов. Сформировать документы.";
+                messageText = "Заявка одобрена. Требуется сформировать документы.";
                 break;
             case "send-documents":
                 messageText = "Отправка документов клиентом";
                 break;
             case "send-ses":
-                messageText = "Сформировать документы и завалидировать код.";
+                messageText = "Завалидировать код.";
                 break;
             case "credit-issued":
                 messageText = "Кредит выдан";
                 break;
-            case "statement-denied":
+            case "statement- denied":
                 messageText = "Ваша заявка отклонена.";
                 break;
             default:

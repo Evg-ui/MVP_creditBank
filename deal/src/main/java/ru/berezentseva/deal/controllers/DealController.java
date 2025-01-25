@@ -13,7 +13,6 @@ import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.deal.DTO.Enums.ApplicationStatus;
 import ru.berezentseva.deal.DTO.Enums.CreditStatus;
 import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
-import ru.berezentseva.deal.RestClient;
 import ru.berezentseva.deal.model.Statement;
 import ru.berezentseva.deal.services.DealProducerService;
 import ru.berezentseva.deal.services.DealService;
@@ -31,15 +30,14 @@ public class DealController {
 
     private final DealService dealService;
     private final DealProducerService dealProducerService;
-    private final RestClient restClient;
 
     @Autowired
-    public DealController(DealService dealService, DealProducerService dealProducerService, RestClient restClient)
+    public DealController(DealService dealService, DealProducerService dealProducerService)
     {   this.dealService = dealService;
         this.dealProducerService = dealProducerService;
-        this.restClient = restClient;
     }
 
+    // расчёт возможных условий кредита. Request - LoanStatementRequestDto, response - List<LoanOfferDto>
     @Operation(
             summary = "Расчёт возможных условий кредита. Request - LoanStatementRequestDto, response - List<LoanOfferDto>",
             description = "На основании запроса на кредит LoanStatementRequestDto"+
@@ -47,8 +45,6 @@ public class DealController {
                     "Направляется POST на /calculator/offers с присвоением каждому полученному элементу StatementID. "+
                     "Результат - 4 предложения в сортировке от худшего к лучшему"
     )
-
-    // расчёт возможных условий кредита. Request - LoanStatementRequestDto, response - List<LoanOfferDto>
     @PostMapping("/statement")
     public ResponseEntity<?>  calculateLoanFourOffers(@RequestBody LoanStatementRequestDto request) {
         log.info("Received request into dealController: {}", request.toString());
@@ -177,15 +173,22 @@ public class DealController {
     }
 
     // админские АПИ
+    @Operation(
+            summary = "Получение информации о заявке по её UUID."
+    )
     @GetMapping("/admin/statement/{statementId}")
     public ResponseEntity<Statement> getStatementById(@PathVariable UUID statementId) {
         Statement statement = dealService.getStatementById(statementId);
         return ResponseEntity.ok(statement);
     }
 
+    @Operation(
+            summary = "Получение информации обо всех заявках"
+    )
     @GetMapping("/admin/statement")
     public List<Statement> getAllStatements() {
-        return restClient.getAllStatements();
+        log.info("Получение всех заявок: ", dealService.getAllStatements());
+        return dealService.getAllStatements();
     }
 
 

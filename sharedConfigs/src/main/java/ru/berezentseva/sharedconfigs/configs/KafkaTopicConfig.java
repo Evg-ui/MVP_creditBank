@@ -3,6 +3,7 @@ package ru.berezentseva.sharedconfigs.configs;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,9 +17,9 @@ import java.util.Set;
 @Configuration
 public class KafkaTopicConfig {
 
-    //@Autowired
+    @Autowired
     private KafkaAdmin kafkaAdmin;
-   // @Autowired
+    @Autowired
     private AdminClient adminClient;
 
     @Bean

@@ -29,7 +29,6 @@ import java.util.*;
 
 @Service
 @Slf4j
-//@ComponentScan(basePackages = {"ru.berezentseva.deal", "ru.berezentseva.sharedConfigs"})
 public class DealService {
     private final RestTemplate restTemplate;
 
