@@ -187,7 +187,7 @@ public class DealController {
     )
     @GetMapping("/admin/statement")
     public List<Statement> getAllStatements() {
-        log.info("Получение всех заявок: ", dealService.getAllStatements());
+        log.info("Получение всех заявок: {}", dealService.getAllStatements());
         return dealService.getAllStatements();
     }
 

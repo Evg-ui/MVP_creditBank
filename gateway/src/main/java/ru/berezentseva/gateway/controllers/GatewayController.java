@@ -167,12 +167,12 @@ public class GatewayController {
     })
     public ResponseEntity<?> dealSesCodeDocuments(@Parameter(description = "UUID заявки, по которой требуется валидация ses-кода.")
                                                @PathVariable UUID statementId) {
-        String baseUrl = "http://localhost:8081/deal/document"; // Базовый URL без statementId
-        URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
-                .path("/" + statementId)
-                .path("/code")
-                .build()
-                .toUri();
+            String baseUrl = "http://localhost:8081/deal/document"; // Базовый URL без statementId
+            URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                    .path("/" + statementId)
+                    .path("/code")
+                    .build()
+                    .toUri();
         log.info("Gateway received request: {}", statementId);
         return gatewayService.getResponseEntity(uri.toString(), statementId);
     }

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 import ru.berezentseva.deal.exception.StatementException;
 import ru.berezentseva.deal.model.Client;
 import ru.berezentseva.deal.model.Statement;
@@ -11,12 +12,12 @@ import ru.berezentseva.deal.repositories.StatementRepository;
 import ru.berezentseva.dossier.DTO.EmailMessage;
 import ru.berezentseva.dossier.DTO.Enums.Theme;
 
+import java.net.URI;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Slf4j
 @Service
-//@ComponentScan(basePackages = {"ru.berezentseva.deal", "ru.berezentseva.sharedConfigs"})
 public class DealProducerService {
     private final KafkaTemplate<String, EmailMessage> kafkaTemplate;
 
@@ -45,7 +46,7 @@ public class DealProducerService {
         emailMessage.setAddress(client.getEmail());
         emailMessage.setTheme(changeMailTheme(topicTheme));
         emailMessage.setStatementId(statement.getStatementId());
-        emailMessage.setText(changeMessageText(topicTheme) + " " +
+        emailMessage.setText(changeMessageText(topicTheme, statementId) + " " +
                 " " + errorMessageText);
         log.info("Отправка письма для {}, по заявке {}, с темой {} ", emailMessage.getAddress(),
                 emailMessage.getStatementId(), emailMessage.getTheme());
@@ -55,21 +56,42 @@ public class DealProducerService {
     }
 
     // определяем текст для отправки сообщения
-    public String changeMessageText(String topicTheme) {
+    public String changeMessageText(String topicTheme, UUID statementId) {
         String messageText;
+        String baseUrl;
+        URI uri;
 
         switch (topicTheme) {
-            case "finish-registration":
-                messageText = "Ваша заявка предварительно одобрена, завершите оформление.";
+            case "finish-registration":  // для получения от клиента полных данных на скоринг
+                messageText =  String.format("Ваша заявка %s предварительно одобрена, завершите оформление. ", statementId);
                 break;
             case "create-documents":
-                messageText = "Заявка одобрена. Требуется сформировать документы.";
+                baseUrl = "http://localhost:8081/deal/document"; // Базовый URL без statementId
+                uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                        .path("/" + statementId)
+                        .path("/send")
+                        .build()
+                        .toUri();
+                messageText =  String.format("Заявка  %s одобрена. \nТребуется сформировать документы. ", statementId) +
+                        "\nСформируйте документы по ссылке " + uri;
                 break;
             case "send-documents":
-                messageText = "Отправка документов клиентом";
+                baseUrl = "http://localhost:8081/deal/document"; // Базовый URL без statementId
+                uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                        .path("/" + statementId)
+                        .path("/sign")
+                        .build()
+                        .toUri();
+                messageText = String.format("Документы по заявке %s. \nПодтвердите по ссылке согласие с условиями ", statementId) + uri;
                 break;
             case "send-ses":
-                messageText = "Завалидировать код.";
+                baseUrl = "http://localhost:8081/deal/document"; // Базовый URL без statementId
+                uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                        .path("/" + statementId)
+                        .path("/code")
+                        .build()
+                        .toUri();
+                messageText = "Завалидируйте код из письма. " + uri;
                 break;
             case "credit-issued":
                 messageText = "Кредит выдан";
@@ -78,7 +100,7 @@ public class DealProducerService {
                 messageText = "Ваша заявка отклонена.";
                 break;
             default:
-                messageText = "Некорректный топик";
+                messageText = "";
                 log.error("Топик не заведен!");
                 break;
         }
