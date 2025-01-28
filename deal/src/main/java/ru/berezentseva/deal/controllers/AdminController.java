@@ -67,7 +67,7 @@ public class AdminController {
         try {
             log.info("Обновление статуса заявки {}", statementId);
             dealService.updateStatusFieldStatement(statementId, ApplicationStatus.DOCUMENT_CREATED, ChangeType.MANUAL);
-            return ResponseEntity.ok("Статус заявки успешно обновлён.");
+            return ResponseEntity.ok("Status was updated successfully!");
         } catch (RestClientException | IllegalArgumentException e) {
             log.error("Ошибка отправления запроса. {}", e.getMessage());
             throw e;

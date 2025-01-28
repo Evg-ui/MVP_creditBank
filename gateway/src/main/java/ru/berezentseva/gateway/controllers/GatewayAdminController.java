@@ -63,7 +63,7 @@ public class GatewayAdminController {
         }
     }
 
-    // администратор - получить заявку по ID
+    // администратор - получить все заявки
     @PostMapping("/admin/statement")
     @Operation(summary = "Просмотр всех  заявок администратором.",
             description = "Администратор системы может просмотреть все существующие заявки."
@@ -81,6 +81,35 @@ public class GatewayAdminController {
             return gatewayService.getAdminResponseEntity(baseUrl);
         } catch (StatementException | RestClientException | IllegalArgumentException e) {
             log.error("Error from \"http://localhost:8081/deal/admin/statement\": {}", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
+    }
+
+    // администратор - обновить статус заявки
+    @PostMapping("/admin/statement/{statementId}/status")
+    @Operation(summary = "Обновление заявки администратором.",
+            description = "Администратор системы может обновить статус заявки вручную."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Успешное завершение.",
+                    content = {@Content(mediaType = "application/json")}), // Указываем, что возвращается в случае успеха
+            @ApiResponse(responseCode = "400", description = "Неверный запрос", content = @Content), // Описание ошибки 400
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера", content = @Content) // Описание ошибки 500
+    })
+    public ResponseEntity<?> updateStatementStatusAdminRequest(@Parameter(description = "UUID заявки, по которой требуется обновить статус.")
+                                                                   @PathVariable UUID statementId) {
+        String baseUrl = "http://localhost:8081/deal/admin/statement";
+        URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                .path("/" + statementId)
+                .path("/status")
+                .build()
+                .toUri();
+        try{
+            return gatewayService.updateAdminResponseEntity(uri.toString(), statementId);
+        } catch (StatementException | RestClientException | IllegalArgumentException e) {
+            log.error("Error from \"http://localhost:8081/deal/admin/statement/status\": {}", e.getMessage());
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(e.getMessage());

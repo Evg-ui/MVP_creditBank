@@ -127,7 +127,7 @@ public class GatewayService {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Неизвестная ошибка");
     }
 
-    public @NotNull ResponseEntity<?> getResponseEntity(String url, UUID statementId ) throws StatementException{
+      public @NotNull ResponseEntity<?> getResponseEntity(String url, UUID statementId ) throws StatementException{
         ResponseEntity<?> responseEntity;
         try{
         responseEntity = restTemplate.exchange(
@@ -160,7 +160,8 @@ public class GatewayService {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Неизвестная ошибка");
     }
 
-    public @NotNull ResponseEntity<?> getAdminResponseEntity(String url, UUID statementId ) throws StatementException{
+    //  админка
+    public @NotNull ResponseEntity<?> getAdminResponseEntity(String url, UUID statementId) throws StatementException{
         ResponseEntity<?> responseEntity;
         try{
             responseEntity = restTemplate.exchange(
@@ -225,4 +226,38 @@ public class GatewayService {
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Неизвестная ошибка");
     }
+
+    public @NotNull ResponseEntity<?> updateAdminResponseEntity(String url, UUID statementId) throws StatementException{
+        ResponseEntity<?> responseEntity;
+        try{
+            responseEntity = restTemplate.exchange(
+                    url,
+                    HttpMethod.PUT,
+                    new HttpEntity<>(statementId, new HttpHeaders()),
+                    new ParameterizedTypeReference<>() {
+                    }
+            );
+            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                log.info("Ответ от {}: {}", url, ResponseEntity.ok(responseEntity.getBody()));
+                return ResponseEntity.ok(responseEntity);
+            }
+        } catch (HttpClientErrorException e) {
+            // Обработка ошибок клиента (4xx)
+            log.error("Ошибка 4xx клиента при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
+            //   throw e;
+            throw new StatementException(e.getMessage());
+        } catch (HttpServerErrorException e) {
+            // Обработка ошибок сервера (5xx)
+            log.error("Ошибка 5xx сервера при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
+            //   throw e;
+            throw new StatementException(e.getMessage());
+        } catch (RestClientException e) {
+            //Обработка общих ошибок Rest клиента
+            log.error("Ошибка при вызове API: ", e);
+            //   throw e;
+            throw new StatementException(e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Неизвестная ошибка");
+    }
+
 }
