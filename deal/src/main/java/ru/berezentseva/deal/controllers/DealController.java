@@ -71,7 +71,7 @@ public class DealController {
                     "Заявка сохраняется."
     )
     @PostMapping("/offer/select")
-    public ResponseEntity<?> selectOffer(@RequestBody LoanOfferDto offerDto) throws StatementException {
+    public ResponseEntity<?> selectOffer(@RequestBody LoanOfferDto offerDto) {
         UUID statementId;
         try {
             // получаем UUID заявки
@@ -124,7 +124,6 @@ public class DealController {
     }
 
     // АПИ для работы с Kafka
-// todo добавить описание полей, которые обновятся
     @Operation(
             summary = "Запрос на отправку документов клиентом",
             description = "На основании заявки на кредит statementId "
@@ -144,10 +143,10 @@ public class DealController {
         }
     }
 
-    // todo исправить описание апи
     @Operation(
-            summary = "Запрос на отправку документов клиентом",
-            description = "На основании заявки на кредит statementId "
+            summary = "Запрос на подписание документов клиентом",
+            description = "Клиенту направляются документы для подписания" +
+                    ", он их должен утвердить по ссылке"
     )
     @PostMapping("/document/{statementId}/sign")
     public void signDocuments(@PathVariable UUID statementId) throws StatementException {
@@ -161,10 +160,9 @@ public class DealController {
         }
     }
 
-    // todo исправить описание апи
     @Operation(
-            summary = "Запрос на отправку документов клиентом",
-            description = "На основании заявки на кредит statementId "
+            summary = "Запрос на подтверждение кода клиентом",
+            description = "Клиенту направляется код для валидации, он его должен подтвердить по ссылке"
     )
     @PostMapping("/document/{statementId}/code")
     public void codeDocuments(@PathVariable UUID statementId) throws StatementException {

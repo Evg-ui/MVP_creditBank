@@ -64,7 +64,6 @@ public class AdminController {
     )
     @PutMapping("/admin/statement/{statementId}/status")
     public ResponseEntity<?> updateApplicationStatus(@PathVariable UUID statementId) throws StatementException {
-        Statement statement;
         try {
             log.info("Обновление статуса заявки {}", statementId);
             dealService.updateStatusFieldStatement(statementId, ApplicationStatus.DOCUMENT_CREATED, ChangeType.MANUAL);

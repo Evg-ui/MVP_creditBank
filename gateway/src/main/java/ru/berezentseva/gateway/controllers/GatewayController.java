@@ -28,7 +28,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping("/creditBank")
-@Tag(name = "Gateway API", description = "API для взаимодействия с кредитным конвейером")
+@Tag(name = "Gateway API", description = "API клиента для взаимодействия с кредитным конвейером")
 public class GatewayController {
 
     private final GatewayService gatewayService;
@@ -217,5 +217,7 @@ public class GatewayController {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getMessage());
     }
+
+
     }
 }

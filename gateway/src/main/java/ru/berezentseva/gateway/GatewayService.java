@@ -14,7 +14,9 @@ import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.calculator.exception.ScoreException;
 import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
 import ru.berezentseva.deal.exception.StatementException;
+import ru.berezentseva.deal.model.Statement;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -143,6 +145,72 @@ public class GatewayService {
             // Обработка ошибок клиента (4xx)
             log.error("Ошибка 4xx клиента при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
            //   throw e;
+            throw new StatementException(e.getMessage());
+        } catch (HttpServerErrorException e) {
+            // Обработка ошибок сервера (5xx)
+            log.error("Ошибка 5xx сервера при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
+            //   throw e;
+            throw new StatementException(e.getMessage());
+        } catch (RestClientException e) {
+            //Обработка общих ошибок Rest клиента
+            log.error("Ошибка при вызове API: ", e);
+            //   throw e;
+            throw new StatementException(e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Неизвестная ошибка");
+    }
+
+    public @NotNull ResponseEntity<?> getAdminResponseEntity(String url, UUID statementId ) throws StatementException{
+        ResponseEntity<?> responseEntity;
+        try{
+            responseEntity = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    new HttpEntity<>(statementId, new HttpHeaders()),
+                    new ParameterizedTypeReference<>() {
+                    }
+            );
+            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                log.info("Ответ от {}: {}", url, ResponseEntity.ok(responseEntity.getBody()));
+                return ResponseEntity.ok(responseEntity.getBody());
+            }
+        } catch (HttpClientErrorException e) {
+            // Обработка ошибок клиента (4xx)
+            log.error("Ошибка 4xx клиента при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
+            //   throw e;
+            throw new StatementException(e.getMessage());
+        } catch (HttpServerErrorException e) {
+            // Обработка ошибок сервера (5xx)
+            log.error("Ошибка 5xx сервера при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
+            //   throw e;
+            throw new StatementException(e.getMessage());
+        } catch (RestClientException e) {
+            //Обработка общих ошибок Rest клиента
+            log.error("Ошибка при вызове API: ", e);
+            //   throw e;
+            throw new StatementException(e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Неизвестная ошибка");
+    }
+
+    public @NotNull ResponseEntity<?> getAdminResponseEntity(String url) throws StatementException{
+        ResponseEntity<List<Statement>> responseEntity;
+        try{
+            responseEntity = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    new HttpEntity<>(new HttpHeaders()),
+                    new ParameterizedTypeReference<>() {
+                    }
+            );
+            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                log.info("Ответ от {}: {}", url, ResponseEntity.ok(responseEntity.getBody()));
+                return ResponseEntity.ok(responseEntity.getBody());
+            }
+        } catch (HttpClientErrorException e) {
+            // Обработка ошибок клиента (4xx)
+            log.error("Ошибка 4xx клиента при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
+            //   throw e;
             throw new StatementException(e.getMessage());
         } catch (HttpServerErrorException e) {
             // Обработка ошибок сервера (5xx)
