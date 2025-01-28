@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
@@ -38,7 +37,6 @@ public class GatewayController {
         this.gatewayService = gatewayService;
     }
 
-    // TODO ошибки  прескоринга надо перехватить в отображение сваггера
     // заявка от клиента - LoanStatementRequestDto - возвращает ошибку прескоринга или 4 оффера LoanOfferDto
     @PostMapping("/statement")
     @Operation(summary = "Подача заявки клиентом.",
@@ -54,18 +52,18 @@ public class GatewayController {
             @ApiResponse(responseCode = "400", description = "Неверный запрос", content = @Content), // Описание ошибки 400
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера", content = @Content) // Описание ошибки 500
     })
-    public ResponseEntity<?> statementRequest(@RequestBody LoanStatementRequestDto request){
+    public ResponseEntity<?> statementRequest(@RequestBody LoanStatementRequestDto request) {
         try{
         log.info("Gateway received request: {}", request.toString());
         ResponseEntity<?> response
                 = gatewayService.getResponseEntity("http://localhost:8082/statement", request);
-            return ResponseEntity.ok("Заявка отправлена!");
+            return  response;
         } catch (ScoreException | RestClientException | IllegalArgumentException e) {
             log.error("Error from \"http://localhost:8081/deal/statement\": {}", e.getMessage());
+           // throw e;
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage())
-                    ;
+                    .body(e.getMessage());
         }
     }
 
@@ -83,9 +81,16 @@ public class GatewayController {
             @ApiResponse(responseCode = "400", description = "Неверный запрос", content = @Content), // Описание ошибки 400
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера", content = @Content) // Описание ошибки 500
     })
-    public ResponseEntity<?> statementSelect(@RequestBody LoanOfferDto request) {
-        log.info("Gateway received request: {}", request);
-        return gatewayService.getResponseEntity("http://localhost:8082/statement/offer", request);
+    public ResponseEntity<?> statementSelect(@RequestBody LoanOfferDto request) throws StatementException {
+        try {
+            log.info("Gateway received request: {}", request);
+            return gatewayService.getResponseEntity("http://localhost:8082/statement/offer", request);
+        } catch (StatementException | RestClientException | IllegalArgumentException e) {
+            log.error("Ошибка при выполнении запроса: {}", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
     }
 
     // завершение регистрации заявки и оформление кредита
@@ -112,10 +117,15 @@ public class GatewayController {
         try {
             log.info("Gateway received request: {}", request);
             return gatewayService.getResponseEntity(uri.toString(), request);
-        } catch (RestClientException | IllegalArgumentException e) {
-            throw e;
+        } catch (RestClientException | IllegalArgumentException | ScoreException e) {
+            log.error("Error from \"http://localhost:8081/deal/calculate\": {}", e.getMessage());
+            // throw e;
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
         }
     }
+
 // StatementException |
     // запрос на получение документов
     @PostMapping("/document/{statementId}")
@@ -129,14 +139,22 @@ public class GatewayController {
     })
     public ResponseEntity<?> dealSendDocuments(@Parameter(description = "UUID заявки, по которой требуется получить документы.")
                                                      @PathVariable UUID statementId) {
-        String baseUrl = "http://localhost:8081/deal/document"; // Базовый URL без statementId
+        String baseUrl = "http://localhost:8081/deal/document";
         URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
                 .path("/" + statementId)
                 .path("/send")
                 .build()
                 .toUri();
+        try {
         log.info("Gateway received request: {}", statementId);
         return gatewayService.getResponseEntity(uri.toString(), statementId);
+        } catch (StatementException | RestClientException | IllegalArgumentException e) {
+            log.error("Error from \"http://localhost:8081/deal/document/send\": {}", e.getMessage());
+            // throw e;
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
     }
 
     // запрос на подписание документов
@@ -152,14 +170,22 @@ public class GatewayController {
     })
         public ResponseEntity<?> dealSignDocuments(@Parameter(description = "UUID заявки, по которой требуется подписание документов.")
                                                @PathVariable UUID statementId) {
-        String baseUrl = "http://localhost:8081/deal/document"; // Базовый URL без statementId
+        String baseUrl = "http://localhost:8081/deal/document";
         URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
                 .path("/" + statementId)
                 .path("/sign")
                 .build()
                 .toUri();
+        try {
         log.info("Gateway received request: {}", statementId);
         return gatewayService.getResponseEntity(uri.toString(), statementId);
+        } catch (StatementException | RestClientException | IllegalArgumentException e) {
+            log.error("Error from \"http://localhost:8081/deal/document/sign\": {}", e.getMessage());
+            // throw e;
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
     }
 
     // запрос на валидацию кода и завершение оформления кредита
@@ -181,8 +207,15 @@ public class GatewayController {
                     .path("/code")
                     .build()
                     .toUri();
+            try{
         log.info("Gateway received request: {}", statementId);
         return gatewayService.getResponseEntity(uri.toString(), statementId);
+    } catch (StatementException | RestClientException | IllegalArgumentException e) {
+        log.error("Error from \"http://localhost:8081/deal/document/code\": {}", e.getMessage());
+        // throw e;
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(e.getMessage());
     }
-
+    }
 }

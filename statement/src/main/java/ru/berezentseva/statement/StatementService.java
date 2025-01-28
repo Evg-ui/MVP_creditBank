@@ -84,11 +84,13 @@ public class StatementService {
                     new HttpEntity<>(offerDto, new HttpHeaders()),
                     LoanOfferDto[].class);
 
+            log.info("Ответ от API: {}", responseEntity.getBody());
+
             if (!responseEntity.getStatusCode().is2xxSuccessful()) {
                 // Обработка ошибок HTTP
                 String errorMessage = "Ошибка при вызове API deal/offer/select: " + responseEntity.getStatusCode() +
                         ", тело ответа: " + Arrays.toString(responseEntity.getBody());
-                         log.error(errorMessage);
+                log.error(errorMessage);
                 throw new RuntimeException(errorMessage);
             }
 
@@ -98,7 +100,7 @@ public class StatementService {
             throw e;
         } catch (HttpServerErrorException e) {
             // Обработка ошибок сервера (5xx)
-               log.error("Ошибка сервера при вызове API deal/offer/select: {}, статус: {}", e.getMessage(), e.getStatusCode());
+            log.error("Ошибка сервера при вызове API deal/offer/select: {}, статус: {}", e.getMessage(), e.getStatusCode());
             throw e;
         } catch (RestClientException e) {
             // Обработка общих ошибок Rest клиента
@@ -106,4 +108,6 @@ public class StatementService {
             throw e;
         }
     }
-    }
+
+
+}

@@ -169,15 +169,18 @@ public class DealService {
         } catch (HttpClientErrorException e) {
             // Обработка ошибок клиента (4xx)
             log.error("Ошибка 4xx клиента при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
-            throw e;
+            // throw e;
+            throw new StatementException(e.getMessage(), e);
         } catch (HttpServerErrorException e) {
             // Обработка ошибок сервера (5xx)
             log.error("Ошибка 5xx сервера при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
-            throw e;
+         //   throw e;
+            throw new StatementException(e.getMessage(), e);
         } catch (RestClientException e) {
             //Обработка общих ошибок Rest клиента
             log.error("Ошибка при вызове API: ", e);
-            throw e;
+          //  throw e;
+            throw new StatementException(e.getMessage(), e);
         }
 
         log.info("Полученный кредит из calc: {}", creditDto);

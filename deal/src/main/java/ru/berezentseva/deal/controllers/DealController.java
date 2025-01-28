@@ -71,7 +71,7 @@ public class DealController {
                     "Заявка сохраняется."
     )
     @PostMapping("/offer/select")
-    public void selectOffer(@RequestBody LoanOfferDto offerDto) throws StatementException {
+    public ResponseEntity<?> selectOffer(@RequestBody LoanOfferDto offerDto) throws StatementException {
         UUID statementId;
         try {
             // получаем UUID заявки
@@ -80,9 +80,12 @@ public class DealController {
             log.info("Отправка сообщения в Dossier для завершения регистрации.");
             dealProducerService.sendToDossierWithKafka(statementId, KafkaTopics.finishRegistration, "");
             log.info("Отправка в Dossier для завершения регистрации завершена!");
+            return ResponseEntity.ok("Заявка успешно обработана!");
         } catch (StatementException | IllegalArgumentException e) {
             log.info("Ошибка получения данных о заявке!");
-            throw e;
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
         }
     }
 
@@ -97,20 +100,26 @@ public class DealController {
     )
 
     @PostMapping("/calculate/{statementId}")
-    public void calculateCredit(@PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) throws StatementException {
+    public ResponseEntity<?> calculateCredit(@PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) throws StatementException {
         try {
             log.info("Received request into dealController: {} with statementId {} ", request.toString(), statementId);
             dealService.finishRegistration(statementId, request);
             log.info("Отправка сообщения в Dossier для получения документов от клиента.");
             dealProducerService.sendToDossierWithKafka(statementId, KafkaTopics.createDocuments, "");
             log.info("Отправка в Dossier для получения документов от клиента завершена!");
-        } catch (RestClientException | IllegalArgumentException e) {
-            String errorMessageText = e.getMessage();
-            log.error("Ошибка формирования кредита. {}", errorMessageText);
-            log.info("Отправка сообщения в Dossier по отказанной заявке.");
-            dealProducerService.sendToDossierWithKafka(statementId, KafkaTopics.statementDenied, errorMessageText);
-            dealService.updateStatusFieldStatement(statementId, ApplicationStatus.CC_DENIED, ChangeType.AUTOMATIC);
-            throw e;
+            return ResponseEntity.ok("Кредит рассчитан!");
+        } catch (StatementException | IllegalArgumentException e) {
+            {
+                String errorMessageText = e.getMessage();
+                log.error("Ошибка формирования кредита. {}", errorMessageText);
+                log.info("Отправка сообщения в Dossier по отказанной заявке.");
+                dealProducerService.sendToDossierWithKafka(statementId, KafkaTopics.statementDenied, errorMessageText);
+                dealService.updateStatusFieldStatement(statementId, ApplicationStatus.CC_DENIED, ChangeType.AUTOMATIC);
+                //   throw e;
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(e.getMessage());
+            }
         }
     }
 
