@@ -58,6 +58,18 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <dependency>
+            <groupId>ru.berezentseva</groupId>
+            <artifactId>sharedConfigs</artifactId>
+            <version>0.0.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations-jakarta</artifactId>
+            <version>2.2.25</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

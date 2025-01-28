@@ -115,7 +115,7 @@ public class DealService {
         log.info("Запрос по заявке: {}", offerDto.getStatementId().toString());
 
         log.info("Обновляем данные заявки");
-        updateStatusFieldStatement(statement.getStatementId(),ApplicationStatus.APPROVED);
+        updateStatusFieldStatement(statement.getStatementId(),ApplicationStatus.APPROVED, ChangeType.AUTOMATIC);
         statement.setAppliedOffer(offerDto);
         log.info("Данные заявки обновлены!");
 
@@ -184,18 +184,18 @@ public class DealService {
         Credit credit = createCredit(creditDto);
         
        // statement.setStatus(ApplicationStatus.CC_APPROVED);
-        updateStatusFieldStatement(statement.getStatementId(),ApplicationStatus.CC_APPROVED);
+        updateStatusFieldStatement(statement.getStatementId(),ApplicationStatus.CC_APPROVED, ChangeType.AUTOMATIC);
         statement.setCreditUuid(credit);
 
         log.info("Обновляем историю заявки");
         updateStatusHistoryFieldStatement(statement, ChangeType.AUTOMATIC);
     }
 
-    public void updateStatusFieldStatement(UUID statementId, ApplicationStatus applicationStatus) throws StatementException {
+    public void updateStatusFieldStatement(UUID statementId, ApplicationStatus applicationStatus, ChangeType changeType) throws StatementException {
         Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
                 -> new StatementException("Заявка с указанным ID не найдена: " + statementId));
         statement.setStatus(applicationStatus);
-        updateStatusHistoryFieldStatement(statement, ChangeType.AUTOMATIC);
+        updateStatusHistoryFieldStatement(statement, changeType);
         statementRepository.save(statement);
     }
 
@@ -365,8 +365,9 @@ public class DealService {
         return credit;
     }
 
-    public Statement getStatementById(UUID statementId) {
-            return statementRepository.findById(statementId).orElseThrow();
+    public Statement getStatementById(UUID statementId) throws StatementException {
+        return statementRepository.findStatementByStatementId(statementId).orElseThrow(()
+                -> new StatementException("Заявка с указанным ID не найдена: " + statementId));
     }
 
     public List<Statement> getAllStatements() {

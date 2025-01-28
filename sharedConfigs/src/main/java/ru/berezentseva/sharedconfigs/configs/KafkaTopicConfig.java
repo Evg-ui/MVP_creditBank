@@ -8,6 +8,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.KafkaAdmin;
+import ru.berezentseva.sharedconfigs.Enums.KafkaTopics;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,12 +28,19 @@ public class KafkaTopicConfig {
         return args ->
         {
             List<String> topics = Arrays.asList(
-                    "finish-registration",
-                    "create-documents",
-                    "send-documents",
-                    "send-ses",
-                    "credit-issued",
-                    "statement-denied"
+//                    "finish-registration",
+//                    "create-documents",
+//                    "send-documents",
+//                    "send-ses",
+//                    "credit-issued",
+//                    "statement-denied"
+                    KafkaTopics.finishRegistration.getTopic(),
+                    KafkaTopics.createDocuments.getTopic(),
+                    KafkaTopics.sendDocuments.getTopic(),
+                    KafkaTopics.sendSes.getTopic(),
+                    KafkaTopics.creditIssued.getTopic(),
+                    KafkaTopics.statementDenied.getTopic()
+
             );
 
             log.info("Создаются топики");

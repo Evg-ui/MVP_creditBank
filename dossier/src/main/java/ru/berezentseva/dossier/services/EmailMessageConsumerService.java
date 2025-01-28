@@ -23,28 +23,33 @@ public class EmailMessageConsumerService  {
     private JavaMailSender mailSender;
 
     private final KafkaTemplate kafkaTemplate;
-
     // consumer - будет обрабатывать пришедшие события по топикам
     public EmailMessageConsumerService(KafkaTemplate kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    @KafkaListener(topics = {
-            "finish-registration",
-            "create-documents",
-            "send-documents",
-            "send-ses",
-            "credit-issued",
-            "statement-denied"
-    }, groupId = "dossier-group")
+    @KafkaListener
+           (topics =
+                    {
+                    "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).finishRegistration.getTopic()}",
+                    "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).createDocuments.getTopic()}",
+                    "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).sendDocuments.getTopic()}",
+                    "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).sendSes.getTopic()}",
+                    "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).creditIssued.getTopic()}",
+                    "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).statementDenied.getTopic()}"
 
-//    public void listen(EmailMessage emailMessage){
-//        //  sendEmail(emailMessage);
-//        log.info("Received message: {}, {}", emailMessage.getText(), emailMessage.getAddress());
-//        System.out.println("Received message: {}" + emailMessage.getText() + " " + emailMessage.getAddress());
-//    }
+//            "finish-registration",
+//            "create-documents",
+//            "send-documents",
+//            "send-ses",
+//            "credit-issued",
+//            "statement-denied"
+    },
+     groupId = "dossier-group")
 
+  //  @KafkaListener(topics = "#{T(ru.berezentseva.dossier.services.EmailMessageConsumerService).getTopics()}", groupId = "dossier-group")
     public void sendEmail(EmailMessage emailMessage){
+        log.info("Получено сообщение из Kafka: {}. Тема сообщения: {}", emailMessage, emailMessage.getTheme());
 
         log.info("Отправка сообщения...");
         try {

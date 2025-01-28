@@ -11,6 +11,7 @@ import ru.berezentseva.deal.model.Statement;
 import ru.berezentseva.deal.repositories.StatementRepository;
 import ru.berezentseva.dossier.DTO.EmailMessage;
 import ru.berezentseva.dossier.DTO.Enums.Theme;
+import ru.berezentseva.sharedconfigs.Enums.KafkaTopics;
 
 import java.net.URI;
 import java.util.NoSuchElementException;
@@ -34,7 +35,7 @@ public class DealProducerService {
         log.info("Отправка запроса в Dossier завершена! Топик: {}", topicForSend);
     }
 
-    public void sendToDossierWithKafka(UUID statementId, String topicTheme, String errorMessageText) throws StatementException {
+    public void sendToDossierWithKafka(UUID statementId, KafkaTopics topicTheme, String errorMessageText) throws StatementException {
         // готовимся к отправке через кафку и на почту клиенту
         Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
                 -> new StatementException("Заявка с указанным ID не найдена: " + statementId));
@@ -50,23 +51,22 @@ public class DealProducerService {
                 " " + errorMessageText);
         log.info("Отправка письма для {}, по заявке {}, с темой {} ", emailMessage.getAddress(),
                 emailMessage.getStatementId(), emailMessage.getTheme());
-        sendEmailToDossier(topicTheme, emailMessage);
+        sendEmailToDossier(topicTheme.getTopic(), emailMessage);
         log.info("Сообщение к отправке: {}", emailMessage);
         log.info("Отправка в Dossier завершена");
     }
 
     // определяем текст для отправки сообщения
-    public String changeMessageText(String topicTheme, UUID statementId) {
+    public String changeMessageText(KafkaTopics topicTheme, UUID statementId) {
         String messageText;
-        String baseUrl;
+        String baseUrl = "http://localhost:8081/deal/document";
         URI uri;
 
         switch (topicTheme) {
-            case "finish-registration":  // для получения от клиента полных данных на скоринг
+            case KafkaTopics.finishRegistration:  // для получения от клиента полных данных на скоринг
                 messageText =  String.format("Ваша заявка %s предварительно одобрена, завершите оформление. ", statementId);
                 break;
-            case "create-documents":
-                baseUrl = "http://localhost:8081/deal/document"; // Базовый URL без statementId
+            case KafkaTopics.createDocuments:
                 uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
                         .path("/" + statementId)
                         .path("/send")
@@ -75,8 +75,7 @@ public class DealProducerService {
                 messageText =  String.format("Заявка  %s одобрена. \nТребуется сформировать документы. ", statementId) +
                         "\nСформируйте документы по ссылке " + uri;
                 break;
-            case "send-documents":
-                baseUrl = "http://localhost:8081/deal/document"; // Базовый URL без statementId
+            case KafkaTopics.sendDocuments:
                 uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
                         .path("/" + statementId)
                         .path("/sign")
@@ -84,8 +83,7 @@ public class DealProducerService {
                         .toUri();
                 messageText = String.format("Документы по заявке %s. \nПодтвердите по ссылке согласие с условиями ", statementId) + uri;
                 break;
-            case "send-ses":
-                baseUrl = "http://localhost:8081/deal/document"; // Базовый URL без statementId
+            case KafkaTopics.sendSes:
                 uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
                         .path("/" + statementId)
                         .path("/code")
@@ -93,10 +91,10 @@ public class DealProducerService {
                         .toUri();
                 messageText = "Завалидируйте код из письма. " + uri;
                 break;
-            case "credit-issued":
+            case KafkaTopics.creditIssued:
                 messageText = "Кредит выдан";
                 break;
-            case "statement- denied":
+            case KafkaTopics.statementDenied:
                 messageText = "Ваша заявка отклонена.";
                 break;
             default:
@@ -109,26 +107,26 @@ public class DealProducerService {
     }
 
     // определяем тему письма для отправки сообщения
-    public Theme changeMailTheme(String topicTheme) {
+    public Theme changeMailTheme(KafkaTopics topicTheme) {
         Theme mailTheme;
 
         switch (topicTheme) {
-            case "finish-registration":
+            case KafkaTopics.finishRegistration:
                 mailTheme = Theme.finishregistration;
                 break;
-            case "create-documents":
+            case KafkaTopics.createDocuments:
                 mailTheme = Theme.createdocuments;
                 break;
-            case "send-documents":
+            case KafkaTopics.sendDocuments:
                 mailTheme = Theme.senddocuments;
                 break;
-            case "send-ses":
+            case KafkaTopics.sendSes:
                 mailTheme = Theme.sendses;
                 break;
-            case "credit-issued":
+            case KafkaTopics.creditIssued:
                 mailTheme = Theme.creditissued;
                 break;
-            case "statement-denied":
+            case KafkaTopics.statementDenied:
                 mailTheme = Theme.statementdenied;
                 break;
             default:
