@@ -229,17 +229,16 @@ public class GatewayService {
 
     public @NotNull ResponseEntity<?> updateAdminResponseEntity(String url, UUID statementId) throws StatementException{
         ResponseEntity<?> responseEntity;
-        try{
-            responseEntity = restTemplate.exchange(
+        try {
+          responseEntity = restTemplate.exchange(
                     url,
                     HttpMethod.PUT,
                     new HttpEntity<>(statementId, new HttpHeaders()),
-                    new ParameterizedTypeReference<>() {
-                    }
+                    new ParameterizedTypeReference<>() {}
             );
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
                 log.info("Ответ от {}: {}", url, ResponseEntity.ok(responseEntity.getBody()));
-                return ResponseEntity.ok(responseEntity);
+              return ResponseEntity.ok(responseEntity.getBody());
             }
         } catch (HttpClientErrorException e) {
             // Обработка ошибок клиента (4xx)

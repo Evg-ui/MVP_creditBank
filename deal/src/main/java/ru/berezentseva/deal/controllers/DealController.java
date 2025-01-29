@@ -152,7 +152,7 @@ public class DealController {
             // обновить поле заявки ses code - где и как
             dealProducerService.sendToDossierWithKafka(statementId, KafkaTopics.sendSes, "");
             dealService.updateSesCodeFieldStatement(statementId);
-        } catch (RestClientException | IllegalArgumentException e) {
+        } catch (StatementException | RestClientException | IllegalArgumentException e) {
             log.error("Ошибка отправления запроса с ses кодом в Dossier. {}", e.getMessage());
             throw e;
         }
@@ -173,7 +173,7 @@ public class DealController {
             dealService.updateSignDateFieldStatement(statementId);
             dealProducerService.sendToDossierWithKafka(statementId, KafkaTopics.creditIssued, "");
             dealService.updateCreditStatusFieldCredit(statementId, CreditStatus.ISSUED);
-        } catch (RestClientException | IllegalArgumentException e) {
+        } catch (StatementException | RestClientException | IllegalArgumentException e) {
             log.error("Ошибка отправления запроса на получение документов в Dossier. {}", e.getMessage());
             throw e;
         }

@@ -107,9 +107,11 @@ public class GatewayAdminController {
                 .build()
                 .toUri();
         try{
-            return gatewayService.updateAdminResponseEntity(uri.toString(), statementId);
+           gatewayService.updateAdminResponseEntity(uri.toString(), statementId);
+            return ResponseEntity.ok("Status was updated successfully!");
         } catch (StatementException | RestClientException | IllegalArgumentException e) {
             log.error("Error from \"http://localhost:8081/deal/admin/statement/status\": {}", e.getMessage());
+           // throw e;
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(e.getMessage());

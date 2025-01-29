@@ -63,15 +63,14 @@ public class AdminController {
             summary = "Обновление статуса заявки."
     )
     @PutMapping("/admin/statement/{statementId}/status")
-    public ResponseEntity<?> updateApplicationStatus(@PathVariable UUID statementId) throws StatementException {
+    public void updateApplicationStatus(@PathVariable UUID statementId) throws StatementException {
         try {
             log.info("Обновление статуса заявки {}", statementId);
             dealService.updateStatusFieldStatement(statementId, ApplicationStatus.DOCUMENT_CREATED, ChangeType.MANUAL);
-            return ResponseEntity.ok("Status was updated successfully!");
-        } catch (RestClientException | IllegalArgumentException e) {
+          //  return ResponseEntity.ok("Status was updated successfully!");
+        } catch (StatementException | RestClientException | IllegalArgumentException e) {
             log.error("Ошибка отправления запроса. {}", e.getMessage());
             throw e;
         }
     }
 }
-// TODO проверить PUT  и select offer

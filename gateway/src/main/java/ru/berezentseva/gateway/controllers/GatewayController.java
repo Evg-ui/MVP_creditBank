@@ -81,7 +81,7 @@ public class GatewayController {
             @ApiResponse(responseCode = "400", description = "Неверный запрос", content = @Content), // Описание ошибки 400
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера", content = @Content) // Описание ошибки 500
     })
-    public ResponseEntity<?> statementSelect(@RequestBody LoanOfferDto request) throws StatementException {
+    public ResponseEntity<?> statementSelect(@RequestBody LoanOfferDto request) {
         try {
             log.info("Gateway received request: {}", request);
             gatewayService.getResponseEntity("http://localhost:8082/statement/offer", request);
