@@ -1,6 +1,7 @@
 package ru.berezentseva.statement;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -19,13 +20,13 @@ import java.util.Objects;
 
 @Slf4j
 @Service
+@ComponentScan(basePackages = {"ru.berezentseva.statement", "ru.berezentseva.deal"})
 public class StatementService {
     private final RestTemplate restTemplate;
 
     public StatementService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
-
 
     public List<LoanOfferDto> returnOffersAfterPrescoring(LoanStatementRequestDto request) throws ScoreException {
 
@@ -75,7 +76,7 @@ public class StatementService {
     }
 
     public void selectOfferFromDeal(LoanOfferDto offerDto) throws StatementException {
-        ResponseEntity<LoanOfferDto[]> responseEntity;
+        ResponseEntity<?> responseEntity;
         try {
             responseEntity = restTemplate.exchange(
                     "http://localhost:8081/deal/offer/select",
@@ -83,26 +84,32 @@ public class StatementService {
                     new HttpEntity<>(offerDto, new HttpHeaders()),
                     LoanOfferDto[].class);
 
+            log.info("Ответ от API: {}", responseEntity.getBody());
+
             if (!responseEntity.getStatusCode().is2xxSuccessful()) {
                 // Обработка ошибок HTTP
                 String errorMessage = "Ошибка при вызове API deal/offer/select: " + responseEntity.getStatusCode() +
-                        ", тело ответа: " + Arrays.toString(responseEntity.getBody());
-                         log.error(errorMessage);
+                        ", тело ответа: " + responseEntity.getBody();
+                log.error(errorMessage);
                 throw new RuntimeException(errorMessage);
             }
 
         } catch (HttpClientErrorException e) {
             // Обработка ошибок клиента (4xx)
             log.error("Ошибка клиента при вызове API deal/offer/select: {}, статус: {}", e.getMessage(), e.getStatusCode());
-            throw e;
+            //   throw e;
+            throw new StatementException(e.getMessage());
         } catch (HttpServerErrorException e) {
             // Обработка ошибок сервера (5xx)
-               log.error("Ошибка сервера при вызове API deal/offer/select: {}, статус: {}", e.getMessage(), e.getStatusCode());
-            throw e;
+            log.error("Ошибка сервера при вызове API deal/offer/select: {}, статус: {}", e.getMessage(), e.getStatusCode());
+            //   throw e;
+            throw new StatementException(e.getMessage());
         } catch (RestClientException e) {
             // Обработка общих ошибок Rest клиента
             log.error("Ошибка при вызове API: ", e);
-            throw e;
+            //   throw e;
+            throw new StatementException(e.getMessage());
         }
+    //    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Неизвестная ошибка");
     }
-    }
+}

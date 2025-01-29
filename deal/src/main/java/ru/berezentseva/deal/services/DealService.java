@@ -115,7 +115,7 @@ public class DealService {
         log.info("Запрос по заявке: {}", offerDto.getStatementId().toString());
 
         log.info("Обновляем данные заявки");
-        updateStatusFieldStatement(statement.getStatementId(),ApplicationStatus.APPROVED);
+        updateStatusFieldStatement(statement.getStatementId(),ApplicationStatus.APPROVED, ChangeType.AUTOMATIC);
         statement.setAppliedOffer(offerDto);
         log.info("Данные заявки обновлены!");
 
@@ -168,34 +168,37 @@ public class DealService {
             }
         } catch (HttpClientErrorException e) {
             // Обработка ошибок клиента (4xx)
-            log.error("Ошибка клиента при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
-            throw e;
+            log.error("Ошибка 4xx клиента при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
+            // throw e;
+            throw new StatementException(e.getMessage(), e);
         } catch (HttpServerErrorException e) {
             // Обработка ошибок сервера (5xx)
-            log.error("Ошибка сервера при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
-            throw e;
+            log.error("Ошибка 5xx сервера при вызове API: {}, статус: {}", e.getMessage(), e.getStatusCode());
+         //   throw e;
+            throw new StatementException(e.getMessage(), e);
         } catch (RestClientException e) {
             //Обработка общих ошибок Rest клиента
             log.error("Ошибка при вызове API: ", e);
-            throw e;
+          //  throw e;
+            throw new StatementException(e.getMessage(), e);
         }
 
         log.info("Полученный кредит из calc: {}", creditDto);
         Credit credit = createCredit(creditDto);
         
        // statement.setStatus(ApplicationStatus.CC_APPROVED);
-        updateStatusFieldStatement(statement.getStatementId(),ApplicationStatus.CC_APPROVED);
+        updateStatusFieldStatement(statement.getStatementId(),ApplicationStatus.CC_APPROVED, ChangeType.AUTOMATIC);
         statement.setCreditUuid(credit);
 
         log.info("Обновляем историю заявки");
         updateStatusHistoryFieldStatement(statement, ChangeType.AUTOMATIC);
     }
 
-    public void updateStatusFieldStatement(UUID statementId, ApplicationStatus applicationStatus) throws StatementException {
+    public void updateStatusFieldStatement(UUID statementId, ApplicationStatus applicationStatus, ChangeType changeType) throws StatementException {
         Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
                 -> new StatementException("Заявка с указанным ID не найдена: " + statementId));
         statement.setStatus(applicationStatus);
-        updateStatusHistoryFieldStatement(statement, ChangeType.AUTOMATIC);
+        updateStatusHistoryFieldStatement(statement, changeType);
         statementRepository.save(statement);
     }
 
@@ -364,4 +367,14 @@ public class DealService {
         log.info("Кредит создан!");
         return credit;
     }
+
+    public Statement getStatementById(UUID statementId) throws StatementException {
+        return statementRepository.findStatementByStatementId(statementId).orElseThrow(()
+                -> new StatementException("Заявка с указанным ID не найдена: " + statementId));
+    }
+
+    public List<Statement> getAllStatements() {
+      return statementRepository.findAll();
+    }
+
 }
