@@ -135,3 +135,41 @@ POST: /statement/offer
 2. Отправка письма на почту Клиенту
 
 Выступает в качестве консьюмера для Kafka. Все основные настройки Kafka вынесены в sharedConfigs - отдельный модуль.
+
+
+***Microservice Gateway**:
+МС представляет из себя аналог "фронта" для общения клиента с банком, имеет админскую панель для ручных правок или
+получения информации по заявкам.
+Вызывает следующие API:
+POST: /statement  (направляет в statement @RequestMapping("/statement"))
+По API приходит  LoanStatementRequestDto
+На основе LoanStatementRequestDto происходит прескоринг.
+
+POST: /statementSelect (направляет в statement @PostMapping("/statement/offer"))
+По API приходит LoanOfferDto
+Клиент направляет выбраннное предложение в банк, предложение пишется в базу, заявка и клиент сохраняются в базу.
+
+POST: /statement/registration/{statementId} (направляет в deal   @PostMapping("/calculate/{statementId}"))
+По API приходит заявка и данные клиента, происходит скоринг. Все данные сохраняются в базу.
+
+POST: /document/{statementId} (направляет в deal @PostMapping("/document/{statementId}/send"))
+По API приходит заявка.
+Запрос на отправку документов клиенту.
+
+POST: /document/{statementId}/sign (направляет в deal @PostMapping("/document/{statementId}/sign"))
+По API приходит заявка.
+Запрос на подписание документов клиенту.
+
+POST: /document/{statementId}/sign/code (направляет в deal @PostMapping("/document/{statementId}/code"))
+По API приходит заявка.
+Запрос на валидацию кода подтверждения клиенту.
+
+Админские методы(AdminController):
+POST: /admin/statement/{statementId} (направляет в deal @GetMapping("/admin/statement/{statementId}"))
+Позволяет найти заявку по указанному statementId
+
+POST: /admin/statement (направляет в @GetMapping("/admin/statement"))
+Позволяет получить список всех заявок с подробностями.
+
+POST: /admin/statement/{statementId}/status (направляет в deal @PutMapping("/admin/statement/{statementId}/status"))
+Позволяет обновить вручную статус заявки по ее statementID
