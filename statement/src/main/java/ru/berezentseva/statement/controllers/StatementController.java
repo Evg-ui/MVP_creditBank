@@ -60,10 +60,14 @@ public class StatementController {
     @PostMapping("/offer")
     public void selectOffer(@RequestBody LoanOfferDto offerDto) throws StatementException {
         try {
-            statementService.selectOfferFromDeal(offerDto);
-        } catch (RestClientException | IllegalArgumentException e) {
+             statementService.selectOfferFromDeal(offerDto);
+          //  return ResponseEntity.ok("Statement was creaated successfully!");
+        } catch (StatementException | RestClientException | IllegalArgumentException e) {
             log.info("Ошибка получения данных о заявке!");
-            throw e;
+           throw e;
+//            return ResponseEntity
+//                    .status(HttpStatus.BAD_REQUEST)
+//                    .body(e.getMessage());
         }
     }
 

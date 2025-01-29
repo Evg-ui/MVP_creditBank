@@ -76,7 +76,7 @@ public class StatementService {
     }
 
     public void selectOfferFromDeal(LoanOfferDto offerDto) throws StatementException {
-        ResponseEntity<LoanOfferDto[]> responseEntity;
+        ResponseEntity<?> responseEntity;
         try {
             responseEntity = restTemplate.exchange(
                     "http://localhost:8081/deal/offer/select",
@@ -89,7 +89,7 @@ public class StatementService {
             if (!responseEntity.getStatusCode().is2xxSuccessful()) {
                 // Обработка ошибок HTTP
                 String errorMessage = "Ошибка при вызове API deal/offer/select: " + responseEntity.getStatusCode() +
-                        ", тело ответа: " + Arrays.toString(responseEntity.getBody());
+                        ", тело ответа: " + responseEntity.getBody();
                 log.error(errorMessage);
                 throw new RuntimeException(errorMessage);
             }
@@ -97,15 +97,19 @@ public class StatementService {
         } catch (HttpClientErrorException e) {
             // Обработка ошибок клиента (4xx)
             log.error("Ошибка клиента при вызове API deal/offer/select: {}, статус: {}", e.getMessage(), e.getStatusCode());
-            throw e;
+            //   throw e;
+            throw new StatementException(e.getMessage());
         } catch (HttpServerErrorException e) {
             // Обработка ошибок сервера (5xx)
             log.error("Ошибка сервера при вызове API deal/offer/select: {}, статус: {}", e.getMessage(), e.getStatusCode());
-            throw e;
+            //   throw e;
+            throw new StatementException(e.getMessage());
         } catch (RestClientException e) {
             // Обработка общих ошибок Rest клиента
             log.error("Ошибка при вызове API: ", e);
-            throw e;
+            //   throw e;
+            throw new StatementException(e.getMessage());
         }
+    //    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Неизвестная ошибка");
     }
 }

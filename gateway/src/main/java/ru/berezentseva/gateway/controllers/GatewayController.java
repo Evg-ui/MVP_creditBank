@@ -84,7 +84,8 @@ public class GatewayController {
     public ResponseEntity<?> statementSelect(@RequestBody LoanOfferDto request) throws StatementException {
         try {
             log.info("Gateway received request: {}", request);
-            return gatewayService.getResponseEntity("http://localhost:8082/statement/offer", request);
+            gatewayService.getResponseEntity("http://localhost:8082/statement/offer", request);
+            return ResponseEntity.ok("Предложение сформировано!");
         } catch (StatementException | RestClientException | IllegalArgumentException e) {
             log.error("Ошибка при выполнении запроса: {}", e.getMessage());
             return ResponseEntity

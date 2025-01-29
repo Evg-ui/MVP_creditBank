@@ -71,7 +71,7 @@ public class DealController {
                     "Заявка сохраняется."
     )
     @PostMapping("/offer/select")
-    public ResponseEntity<?> selectOffer(@RequestBody LoanOfferDto offerDto) {
+    public void selectOffer(@RequestBody LoanOfferDto offerDto) throws StatementException{
         UUID statementId;
         try {
             // получаем UUID заявки
@@ -80,12 +80,10 @@ public class DealController {
             log.info("Отправка сообщения в Dossier для завершения регистрации.");
             dealProducerService.sendToDossierWithKafka(statementId, KafkaTopics.finishRegistration, "");
             log.info("Отправка в Dossier для завершения регистрации завершена!");
-            return ResponseEntity.ok("Заявка успешно обработана!");
+          //  return ResponseEntity.ok("Заявка успешно обработана!");
         } catch (StatementException | IllegalArgumentException e) {
             log.info("Ошибка получения данных о заявке!");
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
+            throw e;
         }
     }
 
