@@ -47,9 +47,11 @@ class DealServiceTest {
     @Mock
     private CreditRepository creditRepository;
 
-    private Client client;
+//    @Mock
+//    private LoanStatementRequestDto request;
 
-    private LoanStatementRequestDto request;
+    @Mock
+    private Client client;
 
     @BeforeEach
     void setUp() {
@@ -106,7 +108,8 @@ class DealServiceTest {
     @Test
         // проверка возврата 4 предложений
     void testNewApplicationAndClientReturnsFourElementsSuccess() {
-        request = new LoanStatementRequestDto();
+
+       LoanStatementRequestDto request = new LoanStatementRequestDto();
         request.setFirstName("Evgeniya");
         request.setLastName("Berezentseva");
         request.setMiddleName("Vladimirovna");
@@ -125,7 +128,7 @@ class DealServiceTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(LoanOfferDto[].class)))
                 .thenReturn(new ResponseEntity<>(mockOffers, HttpStatus.OK));
         // Выполнение метода
-        List<LoanOfferDto> offers = dealService.createNewApplicationAndClient(request);
+        List<LoanOfferDto> offers =dealService.createNewApplicationAndClient(request);
         // Проверка количества возвращенных предложений
         assertEquals(4, offers.size(), "Должно быть 4 оффера");
     }
