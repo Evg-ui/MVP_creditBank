@@ -54,7 +54,7 @@ class DealServiceTest {
     @BeforeEach
     void setUp() {
         client = new Client();
-           }
+    }
 
     @Test
     void testSavedOfferEqualsLoanOfferSuccess() throws StatementException {
@@ -104,7 +104,7 @@ class DealServiceTest {
     }
 
     @Test
-    // проверка возврата 4 предложений
+        // проверка возврата 4 предложений
     void testNewApplicationAndClientReturnsFourElementsSuccess() {
         request = new LoanStatementRequestDto();
         request.setFirstName("Evgeniya");

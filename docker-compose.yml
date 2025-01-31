@@ -1,5 +1,53 @@
 version: '3.8'
 services:
+  sharedconfigsapp:
+    build:
+      context: ./sharedConfigs
+    ports:
+      - "8084:8080"
+#    networks:
+#      - mynetwork
+
+  calculatorapp:
+    build:
+      context: ./calculator
+    ports:
+      - "8080:8080"
+#    networks:
+#      - mynetwork
+
+  statementapp:
+    build:
+      context: ./statement
+    ports:
+      - "8082:8080"
+#    networks:
+#      - mynetwork
+
+  dealapp:
+      build:
+        context: ./deal
+      ports:
+        - "8081:8080"
+#      networks:
+#        - mynetwork
+
+  dossierapp:
+        build:
+          context: ./dossier
+        ports:
+          - "8083:8080"
+#        networks:
+#          - mynetwork
+
+  gatewayapp:
+        build:
+          context: ./gateway
+        ports:
+          - "8000:8080"
+#        networks:
+#          - mynetwork
+
   postgres:
     image: postgres:latest
     restart: unless-stopped
