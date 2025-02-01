@@ -5,11 +5,11 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+
 @Getter @Setter
-@Builder
+@NoArgsConstructor @AllArgsConstructor
 @ToString
-@AllArgsConstructor
-@NoArgsConstructor
+@Builder
 
 public class LoanOfferDto {
     private UUID statementId;

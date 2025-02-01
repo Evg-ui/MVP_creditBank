@@ -47,9 +47,6 @@ class DealServiceTest {
     @Mock
     private CreditRepository creditRepository;
 
-//    @Mock
-//    private LoanStatementRequestDto request;
-
     @Mock
     private Client client;
 

@@ -7,11 +7,7 @@ import ru.berezentseva.calculator.DTO.Enums.MaritalStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Getter @Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@ToString
+@Data
 public class ScoringDataDto {
     private BigDecimal amount;
     private Integer term;

@@ -17,6 +17,7 @@ import ru.berezentseva.calculator.exception.ScoreException;
 
 import java.util.List;
 
+
 @Slf4j
 @Tag(name = "Контроллер кредитного калькулятора",
         description = "Принимается заявка от потенциального заемщика для предварительного и полного расчета кредита")

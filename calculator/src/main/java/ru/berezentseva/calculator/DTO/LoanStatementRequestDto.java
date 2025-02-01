@@ -6,11 +6,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 
-@Getter
-@Setter
+@Getter @Setter
 @ToString
-@NoArgsConstructor
-
+@NoArgsConstructor @AllArgsConstructor
 public class LoanStatementRequestDto {
     private BigDecimal amount;
     private Integer term;

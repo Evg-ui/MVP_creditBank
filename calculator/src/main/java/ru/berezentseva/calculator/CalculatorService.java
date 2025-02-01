@@ -22,8 +22,7 @@ import java.util.stream.Collectors;
 import static ru.berezentseva.calculator.utils.Scoring.inn_REGEX;
 
 @Slf4j
-@Service        // для обозначения класса как сервиса, который содержит бизнес-логику приложения
-
+@Service
 public class CalculatorService {
 
     private BigDecimal baseRate;

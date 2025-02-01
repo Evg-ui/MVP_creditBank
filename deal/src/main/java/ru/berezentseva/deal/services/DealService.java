@@ -10,7 +10,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import ru.berezentseva.calculator.DTO.*;
 import ru.berezentseva.deal.DTO.Enums.ApplicationStatus;
 import ru.berezentseva.deal.DTO.Enums.ChangeType;
 import ru.berezentseva.deal.DTO.Enums.CreditStatus;
@@ -20,6 +19,9 @@ import ru.berezentseva.deal.exception.StatementException;
 import ru.berezentseva.deal.model.*;
 import ru.berezentseva.deal.repositories.*;
 import ru.berezentseva.calculator.DTO.LoanOfferDto;
+import ru.berezentseva.calculator.DTO.CreditDto;
+import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
+import ru.berezentseva.calculator.DTO.ScoringDataDto;
 
 import java.math.RoundingMode;
 import java.sql.Timestamp;

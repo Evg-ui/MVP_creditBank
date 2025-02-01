@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+
 @Slf4j
 @Service
 @ComponentScan(basePackages = {"ru.berezentseva.statement", "ru.berezentseva.deal"})

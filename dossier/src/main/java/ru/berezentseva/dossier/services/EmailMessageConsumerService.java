@@ -11,8 +11,10 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import ru.berezentseva.dossier.DTO.EmailMessage;
 
-@Service
+
 @Slf4j
+@Service
+
 // класс для обработки сообщений из Kafka
 public class EmailMessageConsumerService  {
 
