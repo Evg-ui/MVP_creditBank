@@ -1,18 +1,49 @@
 package ru.berezentseva.dossier.DTO;
 
-import lombok.*;
+import lombok.ToString;
 import ru.berezentseva.dossier.DTO.Enums.Theme;
 
 import java.util.UUID;
 
 @ToString
-@Getter
-@Setter
-@NoArgsConstructor
-public class EmailMessage
-{
-private String address;
-private Theme theme;
-private UUID statementId;
-private String text;
+public class EmailMessage {
+    private String address;
+    private Theme theme;
+    private UUID statementId;
+    private String text;
+
+    public EmailMessage() {
+    }
+
+    public String getAddress() {
+        return this.address;
+    }
+
+    public Theme getTheme() {
+        return this.theme;
+    }
+
+    public UUID getStatementId() {
+        return this.statementId;
+    }
+
+    public String getText() {
+        return this.text;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public void setTheme(Theme theme) {
+        this.theme = theme;
+    }
+
+    public void setStatementId(UUID statementId) {
+        this.statementId = statementId;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
 }

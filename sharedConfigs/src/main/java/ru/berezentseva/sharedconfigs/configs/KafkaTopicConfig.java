@@ -3,6 +3,8 @@ package ru.berezentseva.sharedconfigs.configs;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -15,9 +17,9 @@ import java.util.List;
 import java.util.Set;
 
 
-@Slf4j
 @Configuration
 public class KafkaTopicConfig {
+    private static final Logger log = LoggerFactory.getLogger(KafkaTopicConfig.class);
 
     @Autowired
     private KafkaAdmin kafkaAdmin;

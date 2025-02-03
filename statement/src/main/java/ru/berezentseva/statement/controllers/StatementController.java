@@ -3,25 +3,28 @@ package ru.berezentseva.statement.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
-import ru.berezentseva.calculator.DTO.LoanOfferDto;
-import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
-import ru.berezentseva.calculator.exception.ScoreException;
+import ru.berezentseva.statement.DTO.LoanOfferDto;
+import ru.berezentseva.statement.DTO.LoanStatementRequestDto;
+import ru.berezentseva.statement.exception.ScoreException;
 import ru.berezentseva.statement.StatementService;
 import ru.berezentseva.statement.exception.StatementException;
 
 import java.util.List;
 
-@Slf4j
+//@Slf4j
 @Tag(name = "Контроллер для заявки",
         description = "Принимается заявка от потенциального заемщика для расчета возможных условий кредита. " +
                 "Здесь осуществляется прескоринг, предлагается список предложений и валидация подходящего предложения клиентом.")
 @RestController
 @RequestMapping("/statement")
 public class StatementController {
+    private static final Logger log = LoggerFactory.getLogger(StatementController.class);
     private final StatementService statementService;
 
     public StatementController(StatementService statementService) {

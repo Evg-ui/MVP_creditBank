@@ -1,7 +1,8 @@
 package ru.berezentseva.deal.services;
 
-import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -17,9 +18,9 @@ import java.net.URI;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
-@Slf4j
 @Service
 public class DealProducerService {
+    private static final Logger log = LoggerFactory.getLogger(DealProducerService.class);
     private final KafkaTemplate<String, EmailMessage> kafkaTemplate;
 
     private final StatementRepository statementRepository;

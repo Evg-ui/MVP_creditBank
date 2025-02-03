@@ -4,76 +4,78 @@ networks:
     driver: bridge
 
 services:
-  sharedconfigsapp:
-    build:
-      context: ./sharedConfigs
-      dockerfile: Dockerfile
-    ports:
-      - "8084:8080"
-    depends_on:
-      - calculatorapp
-    networks:
-      - appnetwork
-
-  calculatorapp:
-    build:
-      context: ./calculator
-      dockerfile: Dockerfile
-    ports:
-      - "8085:8080"
-    networks:
-      - appnetwork
-
-  statementapp:
-    build:
-      context: ./statement
-      dockerfile: Dockerfile
-    ports:
-      - "8082:8080"
-    depends_on:
-      - calculatorapp
-    networks:
-      - appnetwork
-
-  dealapp:
-      build:
-        context: ./deal
-        dockerfile: Dockerfile
-      ports:
-        - "8081:8080"
-      depends_on:
-        - postgres
-        - kafka
-        - calculatorapp
-        - dossierapp
-        - statementapp
-        - sharedconfigsapp
-      networks:
-        - appnetwork
-
-  dossierapp:
-        build:
-          context: ./dossier
-          dockerfile: Dockerfile
-        ports:
-          - "8083:8080"
-        depends_on:
-          - kafka
-          - sharedconfigsapp
-        networks:
-          - appnetwork
-
-  gatewayapp:
-        build:
-          context: ./gateway
-          dockerfile: Dockerfile
-        ports:
-          - "8000:8080"
-        depends_on:
-          - statementapp
-          - calculatorapp
-        networks:
-          - appnetwork
+#  sharedconfigsapp:
+#    build:
+#      context: ./sharedConfigs
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8084:8080"
+#    depends_on:
+#      - calculatorapp
+#    networks:
+#      - appnetwork
+#
+#  calculatorapp:
+#    build:
+#      context: ./calculator
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8085:8080"
+#    depends_on:
+#      - statementapp
+#    networks:
+#      - appnetwork
+#
+#  statementapp:
+#    build:
+#      context: ./statement
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8082:8080"
+##    depends_on:
+##      - calculatorapp
+#    networks:
+#      - appnetwork
+#
+#  dealapp:
+#      build:
+#        context: ./deal
+#        dockerfile: Dockerfile
+#      ports:
+#        - "8081:8080"
+#      depends_on:
+#        - postgres
+#        - kafka
+#        - calculatorapp
+#        - dossierapp
+#        - statementapp
+#        - sharedconfigsapp
+#      networks:
+#        - appnetwork
+#
+#  dossierapp:
+#        build:
+#          context: ./dossier
+#          dockerfile: Dockerfile
+#        ports:
+#          - "8083:8080"
+#        depends_on:
+#          - kafka
+#          - sharedconfigsapp
+#        networks:
+#          - appnetwork
+#
+#  gatewayapp:
+#        build:
+#          context: ./gateway
+#          dockerfile: Dockerfile
+#        ports:
+#          - "8000:8080"
+#        depends_on:
+#          - statementapp
+#          - calculatorapp
+#        networks:
+#          - appnetwork
 
   postgres:
     image: postgres:latest

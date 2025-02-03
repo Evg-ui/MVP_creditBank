@@ -1,14 +1,20 @@
 package ru.berezentseva.calculator;
 
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.berezentseva.calculator.DTO.*;
+import ru.berezentseva.calculator.DTO.CreditDto;
+import ru.berezentseva.calculator.DTO.EmploymentDto;
+import ru.berezentseva.calculator.DTO.PaymentScheduleElementDto;
+import ru.berezentseva.calculator.DTO.ScoringDataDto;
+import ru.berezentseva.calculator.DTO.LoanOfferDto;
+import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.calculator.exception.ScoreException;
 
 import java.math.BigDecimal;
@@ -19,13 +25,11 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
-@Slf4j
 @ExtendWith(MockitoExtension.class)
 
 @SpringBootTest
 class CalculatorServiceTest {
-
+    private static final Logger log = LoggerFactory.getLogger(CalculatorServiceTest.class);
 public static final BigDecimal baseRate = BigDecimal.valueOf(15);
 
     @InjectMocks

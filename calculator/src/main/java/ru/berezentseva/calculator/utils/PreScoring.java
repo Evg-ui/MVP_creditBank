@@ -3,7 +3,6 @@ package ru.berezentseva.calculator.utils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
 import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.calculator.exception.ScoreException;
 
@@ -14,9 +13,7 @@ import java.util.regex.Pattern;
 
 @Getter @Setter
 @ToString
-@Slf4j
 public class PreScoring {
-
 
     public static final String firstName_REGEX =  Pattern.compile("[a-zA-z]{2,30}").toString();
     public static final String lastName_REGEX = Pattern.compile("[a-zA-z]{2,30}").toString();
