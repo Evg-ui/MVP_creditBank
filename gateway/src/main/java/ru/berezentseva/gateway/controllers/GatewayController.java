@@ -14,11 +14,11 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
-import ru.berezentseva.calculator.DTO.LoanOfferDto;
-import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.calculator.exception.ScoreException;
-import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
 import ru.berezentseva.deal.exception.StatementException;
+import ru.berezentseva.gateway.DTO.FinishRegistrationRequestDto;
+import ru.berezentseva.gateway.DTO.LoanOfferDto;
+import ru.berezentseva.gateway.DTO.LoanStatementRequestDto;
 import ru.berezentseva.gateway.GatewayService;
 
 import java.net.URI;

@@ -14,8 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
-import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.deal.exception.StatementException;
+import ru.berezentseva.gateway.DTO.LoanStatementRequestDto;
 import ru.berezentseva.gateway.GatewayService;
 
 import java.net.URI;

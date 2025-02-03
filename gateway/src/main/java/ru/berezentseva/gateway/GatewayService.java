@@ -9,12 +9,12 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import ru.berezentseva.calculator.DTO.LoanOfferDto;
-import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.calculator.exception.ScoreException;
-import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
 import ru.berezentseva.deal.exception.StatementException;
 import ru.berezentseva.deal.model.Statement;
+import ru.berezentseva.gateway.DTO.FinishRegistrationRequestDto;
+import ru.berezentseva.gateway.DTO.LoanOfferDto;
+import ru.berezentseva.gateway.DTO.LoanStatementRequestDto;
 
 import java.util.List;
 import java.util.UUID;

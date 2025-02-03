@@ -8,16 +8,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
-import ru.berezentseva.calculator.DTO.LoanOfferDto;
-import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.deal.DTO.Enums.ApplicationStatus;
 import ru.berezentseva.deal.DTO.Enums.ChangeType;
 import ru.berezentseva.deal.DTO.Enums.CreditStatus;
+import ru.berezentseva.deal.DTO.Enums.KafkaTopics;
 import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
+import ru.berezentseva.deal.DTO.LoanOfferDto;
+import ru.berezentseva.deal.DTO.LoanStatementRequestDto;
 import ru.berezentseva.deal.services.DealProducerService;
 import ru.berezentseva.deal.services.DealService;
 import ru.berezentseva.deal.exception.StatementException;
-import ru.berezentseva.sharedconfigs.Enums.KafkaTopics;
 
 import java.util.List;
 import java.util.UUID;
@@ -51,7 +51,7 @@ public class DealController {
         log.info("Received request into dealController: {}", request.toString());
         try {
             log.info("Creating client and statement");
-            List<LoanOfferDto> offers = dealService.createNewApplicationAndClient(request);
+            List<LoanOfferDto> offers= dealService.createNewApplicationAndClient(request);
             log.info("Client and statement are created");
             return new ResponseEntity<>(offers, HttpStatus.OK);
         } catch (RestClientException | IllegalArgumentException e) {

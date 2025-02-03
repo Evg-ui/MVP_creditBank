@@ -2,9 +2,8 @@ package ru.berezentseva.deal.DTO;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.berezentseva.calculator.DTO.EmploymentDto;
-import ru.berezentseva.calculator.DTO.Enums.Gender;
-import ru.berezentseva.calculator.DTO.Enums.MaritalStatus;
+import ru.berezentseva.deal.DTO.Enums.Gender;
+import ru.berezentseva.deal.DTO.Enums.MaritalStatus;
 
 import java.time.LocalDate;
 

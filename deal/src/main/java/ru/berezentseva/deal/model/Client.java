@@ -3,10 +3,10 @@ package ru.berezentseva.deal.model;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import ru.berezentseva.calculator.DTO.Enums.Gender;
 
 import jakarta.persistence.*;
-import ru.berezentseva.calculator.DTO.Enums.MaritalStatus;
+import ru.berezentseva.deal.DTO.Enums.Gender;
+import ru.berezentseva.deal.DTO.Enums.MaritalStatus;
 
 import java.time.LocalDate;
 import java.util.UUID;

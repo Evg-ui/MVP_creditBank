@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import ru.berezentseva.calculator.DTO.PaymentScheduleElementDto;
 import ru.berezentseva.deal.DTO.Enums.CreditStatus;
+import ru.berezentseva.deal.DTO.PaymentScheduleElementDto;
 
 import java.math.BigDecimal;
 import java.util.List;

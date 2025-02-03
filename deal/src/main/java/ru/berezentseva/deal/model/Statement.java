@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import ru.berezentseva.calculator.DTO.LoanOfferDto;
 import ru.berezentseva.deal.DTO.Enums.ApplicationStatus;
+import ru.berezentseva.deal.DTO.LoanOfferDto;
 import ru.berezentseva.deal.DTO.StatementStatusHistoryDto;
 
 import java.sql.Timestamp;

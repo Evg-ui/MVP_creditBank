@@ -5,13 +5,13 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
+import ru.berezentseva.deal.DTO.EmailMessage;
+import ru.berezentseva.deal.DTO.Enums.KafkaTopics;
+import ru.berezentseva.deal.DTO.Enums.Theme;
 import ru.berezentseva.deal.exception.StatementException;
 import ru.berezentseva.deal.model.Client;
 import ru.berezentseva.deal.model.Statement;
 import ru.berezentseva.deal.repositories.StatementRepository;
-import ru.berezentseva.dossier.DTO.EmailMessage;
-import ru.berezentseva.dossier.DTO.Enums.Theme;
-import ru.berezentseva.sharedconfigs.Enums.KafkaTopics;
 
 import java.net.URI;
 import java.util.NoSuchElementException;

@@ -2,8 +2,8 @@ package ru.berezentseva.deal.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import ru.berezentseva.calculator.DTO.Enums.EmploymentStatus;
-import ru.berezentseva.calculator.DTO.Enums.Position;
+import ru.berezentseva.deal.DTO.Enums.EmploymentStatus;
+import ru.berezentseva.deal.DTO.Enums.Position;
 
 import java.math.BigDecimal;
 import java.util.UUID;
