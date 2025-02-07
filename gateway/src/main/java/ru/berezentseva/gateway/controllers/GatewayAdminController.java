@@ -15,9 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
-import ru.berezentseva.deal.exception.StatementException;
 import ru.berezentseva.gateway.DTO.LoanStatementRequestDto;
 import ru.berezentseva.gateway.GatewayService;
+import ru.berezentseva.gateway.exception.StatementException;
 
 import java.net.URI;
 import java.util.UUID;

@@ -1,7 +1,6 @@
 package ru.berezentseva.dossier.services;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -12,12 +11,10 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import ru.berezentseva.dossier.DTO.EmailMessage;
 
-
 @Service
-
+@Slf4j
 // класс для обработки сообщений из Kafka
 public class EmailMessageConsumerService  {
-    private static final Logger log = LoggerFactory.getLogger(EmailMessageConsumerService.class);
 
     @Value("${spring.mail.username}")
     private String mailFrom;
@@ -32,14 +29,14 @@ public class EmailMessageConsumerService  {
     }
 
     @KafkaListener
-           (topics =
+            (topics =
                     {
-                    "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).finishRegistration.getTopic()}",
-                    "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).createDocuments.getTopic()}",
-                    "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).sendDocuments.getTopic()}",
-                    "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).sendSes.getTopic()}",
-                    "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).creditIssued.getTopic()}",
-                    "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).statementDenied.getTopic()}"
+                            "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).finishRegistration.getTopic()}",
+                            "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).createDocuments.getTopic()}",
+                            "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).sendDocuments.getTopic()}",
+                            "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).sendSes.getTopic()}",
+                            "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).creditIssued.getTopic()}",
+                            "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).statementDenied.getTopic()}"
 
 //            "finish-registration",
 //            "create-documents",
@@ -47,10 +44,10 @@ public class EmailMessageConsumerService  {
 //            "send-ses",
 //            "credit-issued",
 //            "statement-denied"
-    },
-     groupId = "dossier-group")
+                    },
+                    groupId = "dossier-group")
 
-  //  @KafkaListener(topics = "#{T(ru.berezentseva.dossier.services.EmailMessageConsumerService).getTopics()}", groupId = "dossier-group")
+    //  @KafkaListener(topics = "#{T(ru.berezentseva.dossier.services.EmailMessageConsumerService).getTopics()}", groupId = "dossier-group")
     public void sendEmail(EmailMessage emailMessage){
         log.info("Получено сообщение из Kafka: {}. Тема сообщения: {}", emailMessage, emailMessage.getTheme());
 
@@ -70,5 +67,4 @@ public class EmailMessageConsumerService  {
             log.error("Ошибка отправки email: {}", e.getMessage(), e);
         }
     }
-    }
-
+}

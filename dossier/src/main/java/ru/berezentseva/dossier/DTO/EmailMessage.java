@@ -1,11 +1,10 @@
 package ru.berezentseva.dossier.DTO;
 
-import lombok.ToString;
+
 import ru.berezentseva.dossier.DTO.Enums.Theme;
 
 import java.util.UUID;
 
-@ToString
 public class EmailMessage {
     private String address;
     private Theme theme;
@@ -45,5 +44,9 @@ public class EmailMessage {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public String toString() {
+        return "EmailMessage(address=" + this.getAddress() + ", theme=" + this.getTheme() + ", statementId=" + this.getStatementId() + ", text=" + this.getText() + ")";
     }
 }

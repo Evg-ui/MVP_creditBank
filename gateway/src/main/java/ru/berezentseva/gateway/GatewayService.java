@@ -10,12 +10,12 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import ru.berezentseva.calculator.exception.ScoreException;
-import ru.berezentseva.deal.exception.StatementException;
-import ru.berezentseva.deal.model.Statement;
 import ru.berezentseva.gateway.DTO.FinishRegistrationRequestDto;
 import ru.berezentseva.gateway.DTO.LoanOfferDto;
 import ru.berezentseva.gateway.DTO.LoanStatementRequestDto;
+import ru.berezentseva.gateway.exception.ScoreException;
+import ru.berezentseva.gateway.exception.StatementException;
+import ru.berezentseva.gateway.model.Statement;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +30,7 @@ public class GatewayService {
         this.restTemplate = restTemplate;
     }
 
-    public @NotNull ResponseEntity<?> getResponseEntity(String url, LoanStatementRequestDto request) throws ScoreException{
+    public @NotNull ResponseEntity<?> getResponseEntity(String url, LoanStatementRequestDto request) throws ScoreException {
         ResponseEntity<?> responseEntity;
         try {
             responseEntity = restTemplate.exchange(
@@ -95,7 +95,7 @@ public class GatewayService {
 
     }
 
-    public @NotNull ResponseEntity<?> getResponseEntity(String url, FinishRegistrationRequestDto request) throws ScoreException {
+    public void getResponseEntity(String url, FinishRegistrationRequestDto request) throws ScoreException {
         ResponseEntity<?> responseEntity;
         try {
         responseEntity = restTemplate.exchange(
@@ -107,7 +107,7 @@ public class GatewayService {
         );
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
             log.info("Ответ от {}: {}", url, ResponseEntity.ok(responseEntity.getBody()));
-            return ResponseEntity.ok(responseEntity.getBody());
+           // return ResponseEntity.ok(responseEntity.getBody());
         }
         }   catch (HttpClientErrorException e) {
             // Обработка ошибок клиента (4xx)
@@ -125,7 +125,7 @@ public class GatewayService {
             //  throw e;
             throw new ScoreException(e.getMessage());
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Неизвестная ошибка");
+       // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Неизвестная ошибка");
     }
 
       public @NotNull ResponseEntity<?> getResponseEntity(String url, UUID statementId ) throws StatementException{

@@ -22,12 +22,12 @@ import java.util.UUID;
         description = "Для просмотра информации по заявкам и ручных изменений.")
 @RestController
 @RequestMapping("/deal")
-public class AdminController {
-    private static final Logger log = LoggerFactory.getLogger(AdminController.class);
+public class DealAdminController {
+    private static final Logger log = LoggerFactory.getLogger(DealAdminController.class);
 
     private final DealService dealService;
 
-    public AdminController(DealService dealService) {
+    public DealAdminController(DealService dealService) {
         this.dealService = dealService;
     }
 
