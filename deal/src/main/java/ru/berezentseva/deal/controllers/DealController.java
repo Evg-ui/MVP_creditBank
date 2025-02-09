@@ -1,5 +1,6 @@
 package ru.berezentseva.deal.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
@@ -85,6 +86,8 @@ public class DealController {
         } catch (StatementException | IllegalArgumentException e) {
             log.info("Ошибка получения данных о заявке!");
             throw e;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -99,7 +102,7 @@ public class DealController {
     )
 
     @PostMapping("/calculate/{statementId}")
-    public void calculateCredit(@PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) throws StatementException {
+    public void calculateCredit(@PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) throws StatementException, JsonProcessingException {
         try {
             log.info("Received request into dealController: {} with statementId {} ", request.toString(), statementId);
             dealService.finishRegistration(statementId, request);
@@ -139,6 +142,8 @@ public class DealController {
         } catch (RestClientException | IllegalArgumentException e) {
             log.error("Ошибка отправления запроса на отправку документов в Dossier. {}", e.getMessage());
             throw e;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -156,6 +161,8 @@ public class DealController {
         } catch (StatementException | RestClientException | IllegalArgumentException e) {
             log.error("Ошибка отправления запроса с ses кодом в Dossier. {}", e.getMessage());
             throw e;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -177,6 +184,8 @@ public class DealController {
         } catch (StatementException | RestClientException | IllegalArgumentException e) {
             log.error("Ошибка отправления запроса на получение документов в Dossier. {}", e.getMessage());
             throw e;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -4,13 +4,42 @@
     <artifactId>MVP2</artifactId>
     <version>1.0</version>
     <packaging>pom</packaging>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.checkerframework</groupId>
+                <artifactId>checker-qual</artifactId>
+                <version>3.37.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-library</artifactId>
+                <version>2.13.12</version>
+            </dependency>
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-reflect</artifactId>
+                <version>2.13.12</version>
+            </dependency>
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>42.5.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>8.0.2.Final</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <modules>
         <module>calculator</module>
-        <module>deal</module>
         <module>statement</module>
+        <module>sharedConfigs</module>
+        <module>deal</module>
         <module>dossier</module>
         <module>gateway</module>
-        <module>sharedConfigs</module>
     </modules>
     <build>
         <plugins>

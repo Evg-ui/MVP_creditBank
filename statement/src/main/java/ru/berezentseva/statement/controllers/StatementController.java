@@ -2,7 +2,6 @@ package ru.berezentseva.statement.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -12,7 +11,7 @@ import org.springframework.web.client.RestClientException;
 import ru.berezentseva.statement.DTO.LoanOfferDto;
 import ru.berezentseva.statement.DTO.LoanStatementRequestDto;
 import ru.berezentseva.statement.exception.ScoreException;
-import ru.berezentseva.statement.StatementService;
+import ru.berezentseva.statement.services.StatementService;
 import ru.berezentseva.statement.exception.StatementException;
 
 import java.util.List;

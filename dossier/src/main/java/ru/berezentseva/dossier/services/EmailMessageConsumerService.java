@@ -1,6 +1,9 @@
 package ru.berezentseva.dossier.services;
 
-import lombok.extern.slf4j.Slf4j;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -8,13 +11,16 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import ru.berezentseva.dossier.DTO.EmailMessage;
 
 @Service
-@Slf4j
 // класс для обработки сообщений из Kafka
 public class EmailMessageConsumerService  {
+    private static final Logger log = LoggerFactory.getLogger(EmailMessageConsumerService.class);
+
+   private final ObjectMapper objectMapper;
 
     @Value("${spring.mail.username}")
     private String mailFrom;
@@ -22,21 +28,24 @@ public class EmailMessageConsumerService  {
     @Autowired
     private JavaMailSender mailSender;
 
-    private final KafkaTemplate kafkaTemplate;
-    // consumer - будет обрабатывать пришедшие события по топикам
-    public EmailMessageConsumerService(KafkaTemplate kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
+    public EmailMessageConsumerService(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
     }
 
+//
+//    @Autowired
+//    private KafkaTemplate<String, EmailMessage> kafkaTemplate;
+
+    @Async
     @KafkaListener
             (topics =
                     {
-                            "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).finishRegistration.getTopic()}",
-                            "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).createDocuments.getTopic()}",
-                            "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).sendDocuments.getTopic()}",
-                            "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).sendSes.getTopic()}",
-                            "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).creditIssued.getTopic()}",
-                            "#{T(ru.berezentseva.sharedconfigs.Enums.KafkaTopics).statementDenied.getTopic()}"
+                            "#{T(ru.berezentseva.dossier.DTO.Enums.KafkaTopics).finishRegistration.getTopic()}",
+                            "#{T(ru.berezentseva.dossier.DTO.Enums.KafkaTopics).createDocuments.getTopic()}",
+                            "#{T(ru.berezentseva.dossier.DTO.Enums.KafkaTopics).sendDocuments.getTopic()}",
+                            "#{T(ru.berezentseva.dossier.DTO.Enums.KafkaTopics).sendSes.getTopic()}",
+                            "#{T(ru.berezentseva.dossier.DTO.Enums.KafkaTopics).creditIssued.getTopic()}",
+                            "#{T(ru.berezentseva.dossier.DTO.Enums.KafkaTopics).statementDenied.getTopic()}"
 
 //            "finish-registration",
 //            "create-documents",
@@ -45,12 +54,15 @@ public class EmailMessageConsumerService  {
 //            "credit-issued",
 //            "statement-denied"
                     },
-                    groupId = "dossier-group")
+                    groupId = "dossier-group"
+                    , containerFactory = "kafkaListenerContainerFactory")
 
     //  @KafkaListener(topics = "#{T(ru.berezentseva.dossier.services.EmailMessageConsumerService).getTopics()}", groupId = "dossier-group")
-    public void sendEmail(EmailMessage emailMessage){
-        log.info("Получено сообщение из Kafka: {}. Тема сообщения: {}", emailMessage, emailMessage.getTheme());
+    public void sendEmail(String emailMessageJSON) throws JsonProcessingException {
+        EmailMessage emailMessage = objectMapper.readValue(emailMessageJSON, EmailMessage.class);
 
+    //    EmailMessage emailMessage = getEmailMessage(email);
+        log.info("Получено сообщение из Kafka: {}. Тема сообщения: {}", emailMessage, emailMessage.getTheme());
         log.info("Отправка сообщения...");
         try {
             log.info("Sending email: from={}, to={}, subject={}, text={}",
@@ -64,7 +76,7 @@ public class EmailMessageConsumerService  {
             mailSender.send(message);
             log.info("Сообщение отправлено успешно!");
         } catch (MailException e) {
-            log.error("Ошибка отправки email: {}", e.getMessage(), e);
+            log.error("Ошибка отправки email: {}, сообщение: {}", e.getMessage(), emailMessage, e);
         }
     }
 }
