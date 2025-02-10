@@ -1,7 +1,9 @@
 package ru.berezentseva.deal.services;
 
-import lombok.extern.slf4j.Slf4j;
+
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -10,26 +12,22 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import ru.berezentseva.calculator.DTO.*;
+import ru.berezentseva.deal.DTO.*;
 import ru.berezentseva.deal.DTO.Enums.ApplicationStatus;
 import ru.berezentseva.deal.DTO.Enums.ChangeType;
 import ru.berezentseva.deal.DTO.Enums.CreditStatus;
-import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
-import ru.berezentseva.deal.DTO.StatementStatusHistoryDto;
 import ru.berezentseva.deal.exception.StatementException;
 import ru.berezentseva.deal.model.*;
 import ru.berezentseva.deal.repositories.*;
-import ru.berezentseva.calculator.DTO.LoanOfferDto;
 
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 
-
 @Service
-@Slf4j
 public class DealService {
+    private static final Logger log = LoggerFactory.getLogger(DealService.class);
     private final RestTemplate restTemplate;
 
     private final ClientRepository clientRepository;
@@ -75,7 +73,7 @@ public class DealService {
         ResponseEntity<LoanOfferDto[]> responseEntity;
         try {
             responseEntity = restTemplate.exchange(
-                    "http://localhost:8080/calculator/offers",
+                    "http://localhost:8085/calculator/offers",
                     HttpMethod.POST,
                     new HttpEntity<>(request, new HttpHeaders()),
                     LoanOfferDto[].class);
@@ -147,7 +145,7 @@ public class DealService {
         CreditDto creditDto;
         try {
             responseEntity = restTemplate.exchange(
-                    "http://localhost:8080/calculator/calc",
+                    "http://localhost:8085/calculator/calc",
                     HttpMethod.POST,
                     new HttpEntity<>(scoringDataDto, new HttpHeaders()),
                     CreditDto.class);

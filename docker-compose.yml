@@ -1,6 +1,118 @@
 version: '3.8'
+networks:
+  appnetwork:
+    driver: bridge
 
 services:
+  sharedconfigsapp:
+    build:
+      context: ./sharedConfigs
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8084"
+#    depends_on:
+#      - calculatorapp
+    networks:
+      - appnetwork
+
+  calculatorapp:
+    build:
+      context: ./calculator
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+#    depends_on:
+#      - statementapp
+    networks:
+      - appnetwork
+
+  statementapp:
+    build:
+      context: ./statement
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+#    depends_on:
+#      - calculatorapp
+    networks:
+      - appnetwork
+
+  dealapp:
+      build:
+        context: ./deal
+        dockerfile: Dockerfile
+      ports:
+        - "8081:8081"
+      depends_on:
+        - postgres
+        - kafka
+        - calculatorapp
+#        - dossierapp
+#        - statementapp
+#        - sharedconfigsapp
+      networks:
+        - appnetwork
+#      env_file:
+#        - configs.env
+      environment:
+        - POSTGRES_USER= ${POSTGRES_USER}
+        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+        - POSTGRES_DB=dbCreditBank
+
+  dossierapp:
+        build:
+          context: ./dossier
+          dockerfile: Dockerfile
+        ports:
+          - "8083:8083"
+        depends_on:
+          - kafka
+          - sharedconfigsapp
+          - dealapp
+        networks:
+          - appnetwork
+        environment:
+          - SPRING_MAIL_USERNAME=${MAIL_USERNAME}
+          - SPRING_MAIL_PASSWORD=${MAIL_PASSWORD}
+
+  gatewayapp:
+        build:
+          context: ./gateway
+          dockerfile: Dockerfile
+        ports:
+          - "8000:8000"
+        depends_on:
+          - statementapp
+          - calculatorapp
+          - postgres
+#          - sharedconfigsapp
+          - kafka
+          - dealapp
+        networks:
+          - appnetwork
+#        env_file:
+#          - configs.env
+        environment:
+          - POSTGRES_USER= ${POSTGRES_USER}
+          - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+          - POSTGRES_DB=dbCreditBank
+
+  postgres:
+    image: postgres:latest
+    restart: unless-stopped
+#    env_file:
+#      - configs.env
+    environment:
+      - POSTGRES_USER= ${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=dbCreditBank
+    ports:
+      - "5432:5432"
+    volumes:
+      - /d/IdeaProjects/MVP2/pgdata:/var/lib/postgresql/data
+    networks:
+      - appnetwork
+
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     environment:
@@ -8,16 +120,19 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - "22181:2181"
+    networks:
+     - appnetwork
 
   kafka:
     image: confluentinc/cp-kafka:latest
+    #container_name: kafka
     ports:
       - "9092:9092"
       - "9093:9093"
     environment:
       KAFKA_BROKER_ID: 1   # уникальный идентификатор (ID) для брокера Kafka.
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181  # указывает, как Kafka должен подключаться к Zookeeper
-      KAFKA_ADVERTISED_LISTENERS: INSIDE://localhost:9092,OUTSIDE://localhost:9093 # определяет, как другие клиенты и брокеры должны подключаться к этому брокеру. В данном случае, брокер будет объявлять, что он доступен по адресу на порту 9092
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9092,OUTSIDE://localhost:9093 # определяет, как другие клиенты и брокеры должны подключаться к этому брокеру. В данном случае, брокер будет объявлять, что он доступен по адресу на порту 9092
       KAFKA_LISTENERS: INSIDE://0.0.0.0:9092,OUTSIDE://0.0.0.0:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT # задает карту протоколов безопасности для слушателей. В данном случае, она указывает, что для протокола PLAINTEXT используется также протокол PLAINTEXT. Это означает, что соединения не будут защищены.
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE #  указывает, какой слушатель (listener) будет использоваться для связи между брокерами в кластере. В данном случае, для межброкерских соединений будет использоваться слушатель с именем PLAINTEXT
@@ -25,3 +140,5 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     depends_on:
       - zookeeper
+    networks:
+      - appnetwork

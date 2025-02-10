@@ -1,6 +1,7 @@
-package ru.berezentseva.statement;
+package ru.berezentseva.statement.services;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -8,33 +9,50 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import ru.berezentseva.calculator.CalculatorService;
-import ru.berezentseva.calculator.DTO.LoanOfferDto;
-import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
-import ru.berezentseva.calculator.exception.ScoreException;
+import ru.berezentseva.statement.exception.ScoreException;
+import ru.berezentseva.statement.DTO.LoanOfferDto;
+import ru.berezentseva.statement.DTO.LoanStatementRequestDto;
 import ru.berezentseva.statement.exception.StatementException;
+import ru.berezentseva.statement.utils.PreScoring;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-@Slf4j
+
 @Service
 @ComponentScan(basePackages = {"ru.berezentseva.statement", "ru.berezentseva.deal"})
 public class StatementService {
-    private final RestTemplate restTemplate;
+    private static final Logger log = LoggerFactory.getLogger(StatementService.class);
 
-    public StatementService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    final RestTemplate restTemplate = new RestTemplate();
+
+//    public StatementService(RestTemplate restTemplate) {
+//        this.restTemplate = restTemplate;
+//    }
+
+    /*Процесс прескоринга - вынесено из calculator*/
+    public void preScoringCheck(LoanStatementRequestDto request) throws ScoreException {
+        log.info("Прескоринг...", request.toString());
+        PreScoring preScoring = new PreScoring();
+        try {
+            preScoring.validate(request);
+            log.info("Прескоринг успешен!");
+        } catch (ScoreException e) {
+            log.info("Ошибка прескоринга: " + e.getMessage());
+            throw e;
+        }
     }
 
     public List<LoanOfferDto> returnOffersAfterPrescoring(LoanStatementRequestDto request) throws ScoreException {
 
-        final CalculatorService calculatorService = new CalculatorService();
+//        final CalculatorService calculatorService;
+//        calculatorService = new CalculatorService();
+
 
         try {
 
-            calculatorService.preScoringCheck(request);
+            preScoringCheck(request);
 
 //         Отправка запроса на /calculator/offers.
             log.info("Отправляем запрос в /calculator/offers");
@@ -53,7 +71,8 @@ public class StatementService {
                    log.error(errorMessage);
                     throw new RuntimeException(errorMessage);
                 }
-                List<LoanOfferDto> offers = Arrays.asList(Objects.requireNonNull(responseEntity.getBody()));
+                List<LoanOfferDto> offers;
+                offers = Arrays.asList(Objects.requireNonNull(responseEntity.getBody()));
                 return offers;
 
             } catch (HttpClientErrorException e) {

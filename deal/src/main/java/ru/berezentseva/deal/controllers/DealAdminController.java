@@ -2,7 +2,8 @@ package ru.berezentseva.deal.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -16,17 +17,17 @@ import ru.berezentseva.deal.services.DealService;
 import java.util.List;
 import java.util.UUID;
 
-@Slf4j
 @Controller
 @Tag(name = "Админский контроллер",
         description = "Для просмотра информации по заявкам и ручных изменений.")
 @RestController
 @RequestMapping("/deal")
-public class AdminController {
+public class DealAdminController {
+    private static final Logger log = LoggerFactory.getLogger(DealAdminController.class);
 
     private final DealService dealService;
 
-    public AdminController(DealService dealService) {
+    public DealAdminController(DealService dealService) {
         this.dealService = dealService;
     }
 

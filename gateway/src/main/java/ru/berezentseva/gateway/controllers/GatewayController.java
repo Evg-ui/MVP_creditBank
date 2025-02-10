@@ -9,27 +9,28 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
-import ru.berezentseva.calculator.DTO.LoanOfferDto;
-import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
-import ru.berezentseva.calculator.exception.ScoreException;
-import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
-import ru.berezentseva.deal.exception.StatementException;
+import ru.berezentseva.gateway.DTO.FinishRegistrationRequestDto;
+import ru.berezentseva.gateway.DTO.LoanOfferDto;
+import ru.berezentseva.gateway.DTO.LoanStatementRequestDto;
 import ru.berezentseva.gateway.GatewayService;
+import ru.berezentseva.gateway.exception.ScoreException;
+import ru.berezentseva.gateway.exception.StatementException;
 
 import java.net.URI;
 import java.util.UUID;
 
 @Tags
-@Slf4j
 @RestController
 @RequestMapping("/creditBank")
 @Tag(name = "Gateway API", description = "API клиента для взаимодействия с кредитным конвейером")
 public class GatewayController {
+    private static final Logger log = LoggerFactory.getLogger(GatewayController.class);
 
     private final GatewayService gatewayService;
 
@@ -58,7 +59,7 @@ public class GatewayController {
         ResponseEntity<?> response
                 = gatewayService.getResponseEntity("http://localhost:8082/statement", request);
             return  response;
-        } catch (ScoreException | RestClientException | IllegalArgumentException e) {
+        } catch (ru.berezentseva.gateway.exception.ScoreException | RestClientException | IllegalArgumentException e) {
             log.error("Error from \"http://localhost:8081/deal/statement\": {}", e.getMessage());
            // throw e;
             return ResponseEntity
@@ -117,8 +118,9 @@ public class GatewayController {
                 .toUri();
         try {
             log.info("Gateway received request: {}", request);
-            return gatewayService.getResponseEntity(uri.toString(), request);
-        } catch (RestClientException | IllegalArgumentException | ScoreException e) {
+            //return gatewayService.getResponseEntity(uri.toString(), request);
+            return ResponseEntity.ok("Предложение сформировано!");
+        } catch (RestClientException | IllegalArgumentException e) {
             log.error("Error from \"http://localhost:8081/deal/calculate\": {}", e.getMessage());
             // throw e;
             return ResponseEntity

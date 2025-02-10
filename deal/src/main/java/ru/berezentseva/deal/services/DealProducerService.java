@@ -1,41 +1,50 @@
 package ru.berezentseva.deal.services;
 
-import lombok.extern.slf4j.Slf4j;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
+import ru.berezentseva.deal.DTO.EmailMessage;
+import ru.berezentseva.deal.DTO.Enums.KafkaTopics;
+import ru.berezentseva.deal.DTO.Enums.Theme;
 import ru.berezentseva.deal.exception.StatementException;
 import ru.berezentseva.deal.model.Client;
 import ru.berezentseva.deal.model.Statement;
 import ru.berezentseva.deal.repositories.StatementRepository;
-import ru.berezentseva.dossier.DTO.EmailMessage;
-import ru.berezentseva.dossier.DTO.Enums.Theme;
-import ru.berezentseva.sharedconfigs.Enums.KafkaTopics;
 
 import java.net.URI;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
-@Slf4j
 @Service
 public class DealProducerService {
-    private final KafkaTemplate<String, EmailMessage> kafkaTemplate;
+    private static final Logger log = LoggerFactory.getLogger(DealProducerService.class);
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
     private final StatementRepository statementRepository;
 
-    public DealProducerService(KafkaTemplate<String, EmailMessage> kafkaTemplate, StatementRepository statementRepository) {
+    private final ObjectMapper objectMapper;
+
+    public DealProducerService(KafkaTemplate<String, String> kafkaTemplate, StatementRepository statementRepository, ObjectMapper objectMapper) {
         this.kafkaTemplate = kafkaTemplate;
         this.statementRepository = statementRepository;
+        this.objectMapper = objectMapper;
     }
-        public void sendEmailToDossier(String topicForSend, @NotNull EmailMessage emailMessage){
+        public void sendEmailToDossier(String topicForSend, @NotNull EmailMessage emailMessage) throws JsonProcessingException {
         log.info("Sending email to: " + emailMessage.getAddress());
         log.info("Отправка запроса в Dossier...");
-        kafkaTemplate.send(topicForSend, emailMessage);
+            String jsonMessage = objectMapper.writeValueAsString(emailMessage);
+            // String jsonEmail = objectMapper.writeValueAsString(emailMessage);
+      //  log.info("Преобразованное сообщение JSON: {}", jsonEmail);
+        kafkaTemplate.send(topicForSend, jsonMessage);
         log.info("Отправка запроса в Dossier завершена! Топик: {}", topicForSend);
     }
 
-    public void sendToDossierWithKafka(UUID statementId, KafkaTopics topicTheme, String errorMessageText) throws StatementException {
+    public void sendToDossierWithKafka(UUID statementId, KafkaTopics topicTheme, String errorMessageText) throws StatementException, JsonProcessingException {
         // готовимся к отправке через кафку и на почту клиенту
         Statement statement = statementRepository.findStatementByStatementId(statementId).orElseThrow(()
                 -> new StatementException("Заявка с указанным ID не найдена: " + statementId));

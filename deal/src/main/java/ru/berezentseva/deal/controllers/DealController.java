@@ -1,33 +1,35 @@
 package ru.berezentseva.deal.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
-import ru.berezentseva.calculator.DTO.LoanOfferDto;
-import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.deal.DTO.Enums.ApplicationStatus;
 import ru.berezentseva.deal.DTO.Enums.ChangeType;
 import ru.berezentseva.deal.DTO.Enums.CreditStatus;
+import ru.berezentseva.deal.DTO.Enums.KafkaTopics;
 import ru.berezentseva.deal.DTO.FinishRegistrationRequestDto;
+import ru.berezentseva.deal.DTO.LoanOfferDto;
+import ru.berezentseva.deal.DTO.LoanStatementRequestDto;
 import ru.berezentseva.deal.services.DealProducerService;
 import ru.berezentseva.deal.services.DealService;
 import ru.berezentseva.deal.exception.StatementException;
-import ru.berezentseva.sharedconfigs.Enums.KafkaTopics;
 
 import java.util.List;
 import java.util.UUID;
 
-@Slf4j
 @Tag(name = "Контроллер для сделки",
         description = "Принимается заявка от потенциального заемщика для расчета возможных условий кредита")
 @RestController
 @RequestMapping("/deal")
 public class DealController {
+    private static final Logger log = LoggerFactory.getLogger(DealController.class);
 
     private final DealService dealService;
     private final DealProducerService dealProducerService;
@@ -51,7 +53,7 @@ public class DealController {
         log.info("Received request into dealController: {}", request.toString());
         try {
             log.info("Creating client and statement");
-            List<LoanOfferDto> offers = dealService.createNewApplicationAndClient(request);
+            List<LoanOfferDto> offers= dealService.createNewApplicationAndClient(request);
             log.info("Client and statement are created");
             return new ResponseEntity<>(offers, HttpStatus.OK);
         } catch (RestClientException | IllegalArgumentException e) {
@@ -84,6 +86,8 @@ public class DealController {
         } catch (StatementException | IllegalArgumentException e) {
             log.info("Ошибка получения данных о заявке!");
             throw e;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -98,14 +102,14 @@ public class DealController {
     )
 
     @PostMapping("/calculate/{statementId}")
-    public ResponseEntity<?> calculateCredit(@PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) throws StatementException {
+    public void calculateCredit(@PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) throws StatementException, JsonProcessingException {
         try {
             log.info("Received request into dealController: {} with statementId {} ", request.toString(), statementId);
             dealService.finishRegistration(statementId, request);
             log.info("Отправка сообщения в Dossier для получения документов от клиента.");
             dealProducerService.sendToDossierWithKafka(statementId, KafkaTopics.createDocuments, "");
             log.info("Отправка в Dossier для получения документов от клиента завершена!");
-            return ResponseEntity.ok("Кредит рассчитан!");
+           // return ResponseEntity.ok("Кредит рассчитан!");
         } catch (StatementException | IllegalArgumentException e) {
             {
                 String errorMessageText = e.getMessage();
@@ -113,10 +117,10 @@ public class DealController {
                 log.info("Отправка сообщения в Dossier по отказанной заявке.");
                 dealProducerService.sendToDossierWithKafka(statementId, KafkaTopics.statementDenied, errorMessageText);
                 dealService.updateStatusFieldStatement(statementId, ApplicationStatus.CC_DENIED, ChangeType.AUTOMATIC);
-                //   throw e;
-                return ResponseEntity
-                        .status(HttpStatus.BAD_REQUEST)
-                        .body(e.getMessage());
+                   throw e;
+//                return ResponseEntity
+//                        .status(HttpStatus.BAD_REQUEST)
+//                        .body(e.getMessage());
             }
         }
     }
@@ -138,6 +142,8 @@ public class DealController {
         } catch (RestClientException | IllegalArgumentException e) {
             log.error("Ошибка отправления запроса на отправку документов в Dossier. {}", e.getMessage());
             throw e;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -155,6 +161,8 @@ public class DealController {
         } catch (StatementException | RestClientException | IllegalArgumentException e) {
             log.error("Ошибка отправления запроса с ses кодом в Dossier. {}", e.getMessage());
             throw e;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -176,6 +184,8 @@ public class DealController {
         } catch (StatementException | RestClientException | IllegalArgumentException e) {
             log.error("Ошибка отправления запроса на получение документов в Dossier. {}", e.getMessage());
             throw e;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 }

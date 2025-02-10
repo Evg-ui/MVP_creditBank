@@ -8,25 +8,27 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
-import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
-import ru.berezentseva.deal.exception.StatementException;
+import ru.berezentseva.gateway.DTO.LoanStatementRequestDto;
 import ru.berezentseva.gateway.GatewayService;
+import ru.berezentseva.gateway.exception.StatementException;
 
 import java.net.URI;
 import java.util.UUID;
 
 @Tags
-@Slf4j
 @RestController
 @RequestMapping("/creditBank")
 @Tag(name = "Gateway API for Admin", description = "API администратора для взаимодействия с кредитным конвейером")
 public class GatewayAdminController {
+    private static final Logger log = LoggerFactory.getLogger(GatewayAdminController.class);
+
     private final GatewayService gatewayService;
 
     public GatewayAdminController(GatewayService gatewayService) {

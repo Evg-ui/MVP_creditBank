@@ -3,9 +3,9 @@ package ru.berezentseva.calculator.utils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
 import ru.berezentseva.calculator.DTO.LoanStatementRequestDto;
 import ru.berezentseva.calculator.exception.ScoreException;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 
 @Getter @Setter
 @ToString
-@Slf4j
 public class PreScoring {
 
     public static final String firstName_REGEX =  Pattern.compile("[a-zA-z]{2,30}").toString();
@@ -55,10 +54,6 @@ public class PreScoring {
         if (!lastName.matches(lastName_REGEX)) {
             throw new ScoreException("В фамилии должно быть от 2 до 30 символов на латинице. Введено значение: " + lastName);
         }
-
-//        if (middleName == null) {
-//            throw new ScoreException("Отчество не должно быть null.");
-//        }
 
         if (middleName != null && !middleName.matches(middleName_REGEX)) {
             throw new ScoreException("В отчестве должно быть от 2 до 30 символов на латинице. Введено значение: " + middleName);
