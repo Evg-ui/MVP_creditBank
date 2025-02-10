@@ -1,0 +1,26 @@
+   name: CI Pipeline
+
+   on:
+     push:
+       branches:
+         - develop  # Укажите вашу основную ветку
+     pull_request:
+       branches:
+         - develop
+
+   jobs:
+     build:
+       runs-on: ubuntu-latest
+
+       steps:
+         - name: Checkout code
+           uses: actions/checkout@v2
+
+         - name: Set up JDK
+           uses: actions/setup-java@v2
+           with:
+             java-version: '23'  # Укажите нужную версию Java
+
+         - name: Build with Maven
+           run: mvn clean install
+   
