@@ -36,7 +36,6 @@
     <modules>
         <module>calculator</module>
         <module>statement</module>
-        <module>sharedConfigs</module>
         <module>deal</module>
         <module>dossier</module>
         <module>gateway</module>

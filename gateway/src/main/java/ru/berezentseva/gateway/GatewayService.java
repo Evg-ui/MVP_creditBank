@@ -95,7 +95,7 @@ public class GatewayService {
 
     }
 
-    public void getResponseEntity(String url, FinishRegistrationRequestDto request) throws ScoreException {
+    public ResponseEntity<?> getResponseEntity(String url, FinishRegistrationRequestDto request) throws ScoreException {
         ResponseEntity<?> responseEntity;
         try {
         responseEntity = restTemplate.exchange(
@@ -107,7 +107,7 @@ public class GatewayService {
         );
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
             log.info("Ответ от {}: {}", url, ResponseEntity.ok(responseEntity.getBody()));
-           // return ResponseEntity.ok(responseEntity.getBody());
+            return ResponseEntity.ok(responseEntity.getBody());
         }
         }   catch (HttpClientErrorException e) {
             // Обработка ошибок клиента (4xx)
@@ -125,7 +125,7 @@ public class GatewayService {
             //  throw e;
             throw new ScoreException(e.getMessage());
         }
-       // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Неизвестная ошибка");
+        return ResponseEntity.status(responseEntity.getStatusCode()).body(responseEntity.getBody());
     }
 
       public @NotNull ResponseEntity<?> getResponseEntity(String url, UUID statementId ) throws StatementException{
@@ -140,7 +140,7 @@ public class GatewayService {
         );
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
             log.info("Ответ от {}: {}", url, ResponseEntity.ok(responseEntity.getBody()));
-            return ResponseEntity.ok("Документы успешно отправлены!");
+            return ResponseEntity.ok("Отправка успешна!");
         }
         } catch (HttpClientErrorException e) {
             // Обработка ошибок клиента (4xx)
@@ -158,7 +158,8 @@ public class GatewayService {
             //   throw e;
             throw new StatementException(e.getMessage());
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Неизвестная ошибка");
+       // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Неизвестная ошибка");
+          return ResponseEntity.status(responseEntity.getStatusCode()).body(responseEntity.getBody());
     }
 
     //  админка
@@ -192,7 +193,8 @@ public class GatewayService {
             //   throw e;
             throw new StatementException(e.getMessage());
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Неизвестная ошибка");
+       // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Неизвестная ошибка");
+        return ResponseEntity.status(responseEntity.getStatusCode()).body(responseEntity.getBody());
     }
 
     public @NotNull ResponseEntity<?> getAdminResponseEntity(String url) throws StatementException{

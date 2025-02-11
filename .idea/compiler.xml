@@ -12,9 +12,11 @@
         <module name="calculator" />
         <module name="deal" />
         <module name="gateway" />
-        <module name="sharedConfigs" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="sharedConfigs" target="23" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

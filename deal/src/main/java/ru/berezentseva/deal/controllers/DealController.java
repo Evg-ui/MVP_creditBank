@@ -109,7 +109,7 @@ public class DealController {
             log.info("Отправка сообщения в Dossier для получения документов от клиента.");
             dealProducerService.sendToDossierWithKafka(statementId, KafkaTopics.createDocuments, "");
             log.info("Отправка в Dossier для получения документов от клиента завершена!");
-           // return ResponseEntity.ok("Кредит рассчитан!");
+        //    return ResponseEntity.ok("Кредит рассчитан!");
         } catch (StatementException | IllegalArgumentException e) {
             {
                 String errorMessageText = e.getMessage();
@@ -117,7 +117,7 @@ public class DealController {
                 log.info("Отправка сообщения в Dossier по отказанной заявке.");
                 dealProducerService.sendToDossierWithKafka(statementId, KafkaTopics.statementDenied, errorMessageText);
                 dealService.updateStatusFieldStatement(statementId, ApplicationStatus.CC_DENIED, ChangeType.AUTOMATIC);
-                   throw e;
+                throw e;
 //                return ResponseEntity
 //                        .status(HttpStatus.BAD_REQUEST)
 //                        .body(e.getMessage());

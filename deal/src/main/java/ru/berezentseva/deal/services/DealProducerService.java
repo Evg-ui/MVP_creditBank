@@ -68,7 +68,7 @@ public class DealProducerService {
     // определяем текст для отправки сообщения
     public String changeMessageText(KafkaTopics topicTheme, UUID statementId) {
         String messageText;
-        String baseUrl = "http://localhost:8081/deal/document";
+        String baseUrl = "http://dealapp:8081/deal/document";
         URI uri;
 
         switch (topicTheme) {
