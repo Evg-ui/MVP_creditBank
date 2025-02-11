@@ -118,9 +118,9 @@ public class GatewayController {
                 .toUri();
         try {
             log.info("Gateway received request: {}", request);
-            //return gatewayService.getResponseEntity(uri.toString(), request);
-            return ResponseEntity.ok("Предложение сформировано!");
-        } catch (RestClientException | IllegalArgumentException e) {
+            return gatewayService.getResponseEntity(uri.toString(), request);
+            //return ResponseEntity.ok("Предложение сформировано!");
+        } catch (ScoreException | RestClientException | IllegalArgumentException e) {
             log.error("Error from \"http://localhost:8081/deal/calculate\": {}", e.getMessage());
             // throw e;
             return ResponseEntity
