@@ -59,7 +59,7 @@ public class StatementService {
             ResponseEntity<LoanOfferDto[]> responseEntity;
             try {
                 responseEntity = restTemplate.exchange(
-                        "http://localhost:8081/deal/statement",
+                        "http://dealapp:8081/deal/statement",
                         HttpMethod.POST,
                         new HttpEntity<>(request, new HttpHeaders()),
                         LoanOfferDto[].class);
@@ -98,7 +98,7 @@ public class StatementService {
         ResponseEntity<?> responseEntity;
         try {
             responseEntity = restTemplate.exchange(
-                    "http://localhost:8081/deal/offer/select",
+                    "http://dealapp:8081/deal/offer/select",
                     HttpMethod.POST,
                     new HttpEntity<>(offerDto, new HttpHeaders()),
                     LoanOfferDto[].class);

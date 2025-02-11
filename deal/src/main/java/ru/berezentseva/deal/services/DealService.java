@@ -73,7 +73,7 @@ public class DealService {
         ResponseEntity<LoanOfferDto[]> responseEntity;
         try {
             responseEntity = restTemplate.exchange(
-                    "http://localhost:8085/calculator/offers",
+                    "http://calculatorapp:8085/calculator/offers",
                     HttpMethod.POST,
                     new HttpEntity<>(request, new HttpHeaders()),
                     LoanOfferDto[].class);
@@ -145,7 +145,7 @@ public class DealService {
         CreditDto creditDto;
         try {
             responseEntity = restTemplate.exchange(
-                    "http://localhost:8085/calculator/calc",
+                    "http://calculatorapp:8085/calculator/calc",
                     HttpMethod.POST,
                     new HttpEntity<>(scoringDataDto, new HttpHeaders()),
                     CreditDto.class);

@@ -57,10 +57,10 @@ public class GatewayController {
         try{
         log.info("Gateway received request: {}", request.toString());
         ResponseEntity<?> response
-                = gatewayService.getResponseEntity("http://localhost:8082/statement", request);
+                = gatewayService.getResponseEntity("http://statementapp:8082/statement", request);
             return  response;
         } catch (ru.berezentseva.gateway.exception.ScoreException | RestClientException | IllegalArgumentException e) {
-            log.error("Error from \"http://localhost:8081/deal/statement\": {}", e.getMessage());
+            log.error("Error from \"http://dealapp:8081/deal/statement\": {}", e.getMessage());
            // throw e;
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
@@ -85,7 +85,7 @@ public class GatewayController {
     public ResponseEntity<?> statementSelect(@RequestBody LoanOfferDto request) {
         try {
             log.info("Gateway received request: {}", request);
-            gatewayService.getResponseEntity("http://localhost:8082/statement/offer", request);
+            gatewayService.getResponseEntity("http://statementapp:8082/statement/offer", request);
             return ResponseEntity.ok("Предложение сформировано!");
         } catch (StatementException | RestClientException | IllegalArgumentException e) {
             log.error("Ошибка при выполнении запроса: {}", e.getMessage());
@@ -111,7 +111,7 @@ public class GatewayController {
     })
     public ResponseEntity<?> dealFinishRegAndScoring(@Parameter(description = "UUID заявки, по которой получены данные для завершения сделки.")
             @PathVariable UUID statementId, @RequestBody FinishRegistrationRequestDto request) {
-        String baseUrl = "http://localhost:8081/deal/calculate"; // Базовый URL без statementId
+        String baseUrl = "http://dealapp:8081/deal/calculate"; // Базовый URL без statementId
         URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
                 .path("/" + statementId) // Добавляем statementId к пути
                 .build()
@@ -121,7 +121,7 @@ public class GatewayController {
             return gatewayService.getResponseEntity(uri.toString(), request);
             //return ResponseEntity.ok("Предложение сформировано!");
         } catch (ScoreException | RestClientException | IllegalArgumentException e) {
-            log.error("Error from \"http://localhost:8081/deal/calculate\": {}", e.getMessage());
+            log.error("Error from \"http://dealapp:8081/deal/calculate\": {}", e.getMessage());
             // throw e;
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
@@ -142,7 +142,7 @@ public class GatewayController {
     })
     public ResponseEntity<?> dealSendDocuments(@Parameter(description = "UUID заявки, по которой требуется получить документы.")
                                                      @PathVariable UUID statementId) {
-        String baseUrl = "http://localhost:8081/deal/document";
+        String baseUrl = "http://dealapp:8081/deal/document";
         URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
                 .path("/" + statementId)
                 .path("/send")
@@ -152,7 +152,7 @@ public class GatewayController {
         log.info("Gateway received request: {}", statementId);
         return gatewayService.getResponseEntity(uri.toString(), statementId);
         } catch (StatementException | RestClientException | IllegalArgumentException e) {
-            log.error("Error from \"http://localhost:8081/deal/document/send\": {}", e.getMessage());
+            log.error("Error from \"http://dealapp:8081/deal/document/send\": {}", e.getMessage());
             // throw e;
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
@@ -173,7 +173,7 @@ public class GatewayController {
     })
         public ResponseEntity<?> dealSignDocuments(@Parameter(description = "UUID заявки, по которой требуется подписание документов.")
                                                @PathVariable UUID statementId) {
-        String baseUrl = "http://localhost:8081/deal/document";
+        String baseUrl = "http://dealapp:8081/deal/document";
         URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
                 .path("/" + statementId)
                 .path("/sign")
@@ -183,7 +183,7 @@ public class GatewayController {
         log.info("Gateway received request: {}", statementId);
         return gatewayService.getResponseEntity(uri.toString(), statementId);
         } catch (StatementException | RestClientException | IllegalArgumentException e) {
-            log.error("Error from \"http://localhost:8081/deal/document/sign\": {}", e.getMessage());
+            log.error("Error from \"http://dealapp:8081/deal/document/sign\": {}", e.getMessage());
             // throw e;
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
@@ -204,7 +204,7 @@ public class GatewayController {
     })
     public ResponseEntity<?> dealSesCodeDocuments(@Parameter(description = "UUID заявки, по которой требуется валидация ses-кода.")
                                                @PathVariable UUID statementId) {
-            String baseUrl = "http://localhost:8081/deal/document"; // Базовый URL без statementId
+            String baseUrl = "http://dealapp:8081/deal/document"; // Базовый URL без statementId
             URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
                     .path("/" + statementId)
                     .path("/code")
@@ -214,7 +214,7 @@ public class GatewayController {
         log.info("Gateway received request: {}", statementId);
         return gatewayService.getResponseEntity(uri.toString(), statementId);
     } catch (StatementException | RestClientException | IllegalArgumentException e) {
-        log.error("Error from \"http://localhost:8081/deal/document/code\": {}", e.getMessage());
+        log.error("Error from \"http://dealapp:8081/deal/document/code\": {}", e.getMessage());
         // throw e;
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
